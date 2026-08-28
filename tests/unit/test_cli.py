@@ -69,8 +69,8 @@ def test_loader_refusal_is_one_line_exit_2(tmp_path: Path) -> None:
 
 
 def test_not_yet_commands_exit_2_with_phase_message() -> None:
-    r = run("replay", "artifacts/x.json")
-    assert r.returncode == EXIT_USAGE and "phase 4" in r.stderr
+    r = run("replay", "artifacts/x.json", "--param", "member_id=1")
+    assert r.returncode == EXIT_USAGE and "file not found" in r.stderr  # replay exists since phase 4; a missing file is a loader refusal
     r = run("discover", "--goal", "x")
     assert r.returncode == EXIT_USAGE and "phase 5" in r.stderr
 

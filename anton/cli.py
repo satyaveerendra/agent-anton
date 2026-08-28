@@ -1,8 +1,8 @@
 """``python -m anton <cmd>`` — a thin wrapper (SPEC §13).
 
-Phase 1 shipped ``inspect`` and ``approve``; phase 2 adds ``target serve``. ``discover`` and
-``replay`` are registered so the usage text is complete, and exit 2 with a clear message
-until their phase lands (SPEC §17).
+Phase 1 shipped ``inspect`` and ``approve``; phase 2 ``target serve``; phase 4 ``replay``.
+``discover`` is registered so the usage text is complete, and exits 2 with a clear message
+until its phase lands (SPEC §17).
 """
 
 from __future__ import annotations
@@ -39,11 +39,10 @@ from anton.schema.loader import (
     reachable_business_codes,
     resolve_repo_path,
 )
-from anton.schema.result import EXIT_USAGE
+from anton.schema.result import EXIT_USAGE, exit_code
 
 NOT_YET = {
     "discover": "phase 5",
-    "replay": "phase 4",
 }
 
 
@@ -222,6 +221,48 @@ def cmd_target(args: argparse.Namespace) -> int:
     return 0
 
 
+def parse_params(items: list[str]) -> dict[str, str]:
+    """``--param name=value`` (repeatable); a malformed item is a usage error (exit 2)."""
+    out: dict[str, str] = {}
+    for item in items:
+        if "=" not in item:
+            raise LoaderError(f"--param expects name=value, got {item!r}")
+        name, value = item.split("=", 1)
+        if not name:
+            raise LoaderError(f"--param expects name=value, got {item!r}")
+        out[name] = value
+    return out
+
+
+def cmd_replay(args: argparse.Namespace) -> int:
+    """``anton replay``: the thin wrapper over ``anton.api.invoke`` (SPEC §9, §13)."""
+    from anton.api import ParamError, invoke
+
+    params = parse_params(args.param)
+    try:
+        result = invoke(
+            args.artifact,
+            params,
+            overlay=args.overlay,
+            policy=args.policy,
+            url=args.url,
+            approve_risky=args.approve_risky,
+            allow_draft=args.allow_draft,
+            escalate=args.escalate,
+            escalate_timeout_s=args.escalate_timeout,
+            console_port=args.console_port,
+            outputs_file=args.outputs_file,
+            record_video=args.record_video,
+            run_dir=args.run_dir,
+            headless=True if args.headless else None,
+        )
+    except ParamError as e:
+        print(f"anton replay: {e}", file=sys.stderr)
+        return EXIT_USAGE
+    sys.stdout.write(result.model_dump_json(indent=2) + "\n")
+    return exit_code(result)
+
+
 def cmd_not_yet(args: argparse.Namespace) -> int:
     print(f"anton {args.command}: not available until {NOT_YET[args.command]} (SPEC §17)", file=sys.stderr)
     return EXIT_USAGE
@@ -253,6 +294,23 @@ def build_parser() -> argparse.ArgumentParser:
     p_serve.add_argument("--host", default="127.0.0.1")
     p_serve.add_argument("--debug-state", action="store_true", dest="debug_state", help="expose GET /__state/member/<id> (acceptance fixture only)")
     p_serve.set_defaults(func=cmd_target)
+
+    p_replay = sub.add_parser("replay", help="replay an approved capability artifact deterministically")
+    p_replay.add_argument("artifact", type=Path)
+    p_replay.add_argument("--param", action="append", default=[], metavar="NAME=VALUE", help="capability input (repeatable)")
+    p_replay.add_argument("--overlay", type=Path, default=None)
+    p_replay.add_argument("--policy", type=Path, default=None)
+    p_replay.add_argument("--url", default=None, help="entry URL override; an origin-only URL keeps the profile's path")
+    p_replay.add_argument("--approve-risky", action="store_true", dest="approve_risky", help="caller consent for RISKY steps")
+    p_replay.add_argument("--allow-draft", action="store_true", dest="allow_draft")
+    p_replay.add_argument("--escalate", action="store_true", help="(phase 6) park on failure and hand off to a human")
+    p_replay.add_argument("--escalate-timeout", type=int, default=600, dest="escalate_timeout")
+    p_replay.add_argument("--console-port", type=int, default=7071, dest="console_port")
+    p_replay.add_argument("--outputs-file", type=Path, default=None, dest="outputs_file", help="raw outputs (incl. sensitive) written here, mode 0600")
+    p_replay.add_argument("--record-video", action="store_true", dest="record_video")
+    p_replay.add_argument("--run-dir", type=Path, default=None, dest="run_dir", help="default: runs/<run_id>")
+    p_replay.add_argument("--headless", action="store_true", help="headless browser (default: headed, or $ANTON_HEADLESS=1)")
+    p_replay.set_defaults(func=cmd_replay)
 
     for name in NOT_YET:
         p = sub.add_parser(name, help=f"(available from {NOT_YET[name]})")

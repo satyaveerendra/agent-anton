@@ -1,0 +1,20 @@
+# Declared interface for servicing.read_savings_balance (SPEC §17 phase 4). The artifact's
+# `inputs`/`outputs` are copied from here; the business outcomes are the closed outcome space.
+capability_id: servicing.read_savings_balance
+name: Read savings balance
+description: Look up a member by id and read the current balance of their Savings account.
+inputs:
+  - name: member_id
+    type: STRING
+    description: The member's numeric id (e.g. 204817)
+    required: true
+    pattern: "^[0-9]+$"
+outputs:
+  - name: savings_balance
+    type: NUMBER
+    description: Current balance of the member's Savings account, in dollars
+    sensitive: false
+business_outcomes:
+  MEMBER_NOT_FOUND: No member with that id exists
+  VALIDATION_ERROR: The app rejected an input
+  PERMISSION_DENIED: The operator lacks permission for this action

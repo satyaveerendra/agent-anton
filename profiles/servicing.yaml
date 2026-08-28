@@ -1,0 +1,129 @@
+# AppProfile for the Member Servicing Console (SPEC §4, §6). Human-curated: entry URL, allowed
+# routes, the mandatory `login` flow, ALL app-level detectors (the outcome space is declared per
+# app because one happy-path discovery never observes the outcomes it did not hit), and the
+# sensitive_elements masks used for screenshots AND snapshot scrubbing.
+app_id: servicing
+tenant_id: alpha
+app_version: "1"
+entry_url: http://localhost:8000/search
+route_prefix: ""
+allowed_url_patterns: ["/login", "/search", "/member/**"]
+
+flows:
+  login:
+    # No NAVIGATE: the flow acts on whatever login page the app redirected to, so ?next= is honoured.
+    - id: fill_username
+      description: Type the demo operator's username
+      action: FILL
+      target: &username_field
+        candidates:
+          - {kind: role_name, tier: 1, role: textbox, name: Username, rationale: "the input's accessible name comes from the 'Username' label cell"}
+          - {kind: label_relative, tier: 2, relation: right_of_label, anchor_text: Username, target_role: textbox, rationale: "the field sits right of its label cell"}
+        fingerprint: {role: textbox, control_type: input, name_snippet: Username}
+      value: {kind: literal, value: ops_user}
+      postcondition:
+        all_of:
+          - {kind: field_value, ladder: *username_field, expected: {kind: literal, value: ops_user}}
+    - id: fill_password
+      description: Type the password from the DEMO_PASSWORD secret (never stored)
+      action: FILL
+      target: &password_field
+        candidates:
+          - {kind: role_name, tier: 1, role: textbox, name: Password, rationale: "accessible name from the 'Password' label cell"}
+          - {kind: label_relative, tier: 2, relation: right_of_label, anchor_text: Password, target_role: textbox, rationale: "the field sits right of its label cell"}
+        fingerprint: {role: textbox, control_type: input, name_snippet: Password}
+      value: {kind: secret, name: DEMO_PASSWORD}
+      postcondition:
+        all_of:
+          - {kind: field_value, ladder: *password_field, expected: {kind: secret, name: DEMO_PASSWORD}}
+    - id: click_sign_in
+      description: Submit the sign-in form
+      action: CLICK
+      target:
+        candidates:
+          - {kind: role_name, tier: 1, role: button, name: Sign in, rationale: "the only submit button on the page"}
+          - {kind: exact_text, tier: 2, text: Sign in, rationale: "button text is the label"}
+        fingerprint: {role: button, control_type: button, name_snippet: Sign in}
+      postcondition:
+        # Destination-agnostic: the authenticated header landmark, wherever ?next= lands us.
+        all_of:
+          - {kind: element_visible, ladder: &signout_ladder {candidates: [{kind: role_name, tier: 1, role: link, name: Sign out, rationale: "the header's sign-out link exists only when authenticated"}], fingerprint: {role: link, control_type: a, name_snippet: Sign out}}}
+
+global_detectors:
+  - arm: RECOVERABLE
+    id: session_expired
+    when:
+      - kind: all_of
+        predicates:
+          - {kind: url_matches, regex: "^/login"}
+          - {kind: text_visible, regex: "session has expired"}
+    recovery: {kind: run_flow, flow_id: login, max_attempts: 2}
+  - arm: RECOVERABLE
+    id: announcement_modal
+    when:
+      - {kind: element_visible, ladder: &dismiss_ladder {candidates: [{kind: role_name, tier: 1, role: button, name: Dismiss, rationale: "the maintenance notice's only button"}], fingerprint: {role: button, control_type: button, name_snippet: Dismiss}}}
+    recovery: {kind: dismiss, target: *dismiss_ladder, max_attempts: 2}
+  - arm: BUSINESS_OUTCOME
+    id: member_not_found
+    when:
+      - {kind: text_visible, regex: "No member found"}
+    outcome_code: MEMBER_NOT_FOUND
+    detail_locator:
+      candidates:
+        - {kind: exact_text, tier: 2, text: "No member found for $param:member_id", rationale: "the not-found cell quotes the id that was searched"}
+      fingerprint: {role: cell, control_type: td}
+  - arm: BUSINESS_OUTCOME
+    id: validation_error
+    when:
+      - {kind: text_visible, regex: "Please correct the errors below"}
+    outcome_code: VALIDATION_ERROR
+    detail_locator:
+      candidates:
+        - {kind: label_relative, tier: 2, relation: right_of_label, anchor_text: Initial deposit, target_role: text, rationale: "the inline error text is rendered right of the field's label, after the input"}
+      fingerprint: {role: text, control_type: span}
+  - arm: BUSINESS_OUTCOME
+    id: permission_denied
+    when:
+      - {kind: text_visible, regex: "do not have permission"}
+    outcome_code: PERMISSION_DENIED
+    detail_locator:
+      candidates:
+        - {kind: exact_text, tier: 2, text: "You do not have permission to open sub-accounts.", rationale: "the denial page's single message cell"}
+      fingerprint: {role: cell, control_type: td}
+  - arm: HARD_FAILURE
+    id: app_error
+    when:
+      - {kind: title_matches, regex: "500"}
+    reason: application error page (HTTP 500)
+
+sensitive_elements:
+  - id: ssn_cell
+    applies_to: "^/member/[^/]+$"
+    ladder:
+      candidates:
+        - {kind: label_relative, tier: 2, relation: right_of_label, anchor_text: SSN, rationale: "the value cell right of the SSN label, inside the detail pane", frame_path: ["iframe[name=detail]"]}
+      fingerprint: {role: cell, control_type: td}
+  - id: dob_cell
+    applies_to: "^/member/[^/]+$"
+    ladder:
+      candidates:
+        - {kind: label_relative, tier: 2, relation: right_of_label, anchor_text: Date of Birth, rationale: "the value cell right of the DOB label, inside the detail pane", frame_path: ["iframe[name=detail]"]}
+      fingerprint: {role: cell, control_type: td}
+  - id: checking_account_no
+    applies_to: "^/member/[^/]+$"
+    ladder:
+      candidates:
+        - {kind: label_relative, tier: 2, relation: row_cell, anchor_text: Checking, anchor_col_header: Type, col_header: "Account No.", rationale: "the Checking row's account number cell; row/column anchoring survives the tenant column shift", frame_path: ["iframe[name=detail]"]}
+      fingerprint: {role: cell, control_type: td}
+  - id: savings_account_no
+    applies_to: "^/member/[^/]+$"
+    ladder:
+      candidates:
+        - {kind: label_relative, tier: 2, relation: row_cell, anchor_text: Savings, anchor_col_header: Type, col_header: "Account No.", rationale: "the Savings row's account number cell", frame_path: ["iframe[name=detail]"]}
+      fingerprint: {role: cell, control_type: td}
+  - id: account_number_cell
+    applies_to: "/subaccount/confirmation$"
+    ladder:
+      candidates:
+        - {kind: label_relative, tier: 2, relation: right_of_label, anchor_text: Account Number, rationale: "the new account number sits right of its label on the confirmation page"}
+      fingerprint: {role: cell, control_type: td}

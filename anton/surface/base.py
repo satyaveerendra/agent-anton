@@ -65,12 +65,18 @@ class Surface(Protocol):
         """Redacted at build (SPEC §8). Returns an EMPTY snapshot during a pending navigation."""
         ...
 
+    def last_snapshot(self) -> SemanticSnapshot:
+        """The snapshot ``resolve`` currently works against (observing first if there is none) —
+        the engine logs it as the pre-act ``observation`` (SPEC §9)."""
+        ...
+
     def act(self, action: ConcreteAction, timeout_ms: int) -> None:
         """After ActionGate approval. Never waits for a resulting navigation; raises ActError."""
         ...
 
-    def read(self, el: ResolvedElement, attr: Literal["text", "value"]) -> str:
-        """LIVE, unredacted (SPEC §9: extraction, FieldValue, detail_locator)."""
+    def read(self, el: ResolvedElement, attr: Literal["text", "value", "checked"]) -> str:
+        """LIVE, unredacted (SPEC §9: extraction, FieldValue, detail_locator). ``checked`` reads
+        "true"/"false" for the ``Checked`` predicate."""
         ...
 
     def screenshot(self, masks: list[MaskSpec]) -> Path:

@@ -5,7 +5,47 @@
 - **Phase 1 — Scaffold + schema: complete** — 2026-08-28. Gate `make verify-0` green.
 - **Phase 2 — Target app: complete** — 2026-08-28. Gate `make verify-target` green.
 - **Phase 3 — Surface + policy: complete** — 2026-08-28 (1 of its 2-session budget). Gates `make verify-0` + `make verify-surface` green (output below); `verify-target` still green.
-- **Phase 4 — Replay first: not started.**
+- **Phase 4 — Replay first: complete** — 2026-08-28 (1 session, on budget). Gates `make verify-1`, `verify-1b`, `verify-2`, `verify-3`, `verify-4`, `verify-7` green (output below); `verify-0`, `verify-surface`, `verify-target` still green. **Discovery spike NOT run: `ANTHROPIC_API_KEY` was not set in this session** (SPEC §17 phase 4: "skipped with a clear message if absent") — no `turns.jsonl` exists and nothing under `anton/discovery/` was written; it is the first item of phase 5.
+- **Phase 5 — Discovery: not started.**
+
+## What exists (phase 4)
+- `specs/read_savings_balance.yaml`, `specs/open_subaccount.yaml` — the declared interfaces (inputs/outputs/outcome space).
+- `artifacts/read_savings_balance.json` (2 steps), `artifacts/open_subaccount.json` (9 steps, one RISKY) — hand-authored per the §10.3 id rule, **approved** (`anton approve`, hash-bound); tier 1 role+name → tier 2 label-relative/exact-text → tier 3 bbox ladders, the tier-3 boxes measured on the live app at the engine's 1280×900 viewport; `inputs`/`outputs` byte-identical to the specs.
+- `profiles/servicing.yaml` — login flow (Username/Password/Sign in; SecretRef `DEMO_PASSWORD`; destination-agnostic final postcondition), the six pinned detectors (`session_expired`→RunFlow login, `announcement_modal`→Dismiss, `member_not_found`/`validation_error`/`permission_denied` BUSINESS with live `detail_locator`s, `app_error` HARD on title "500"), five masks (SSN, DOB, Checking/Savings account numbers on the member page; Account Number on the confirmation page).
+- `anton/replay/predicates.py` (`Evaluator`: every predicate kind; `FieldValue`/`Checked` read LIVE), `anton/replay/locate.py::resume_point` (pure, callback-based; the one resume path), `anton/replay/engine.py` (SPEC §9 verbatim: `validate_params` → draft checks before any browser → `__preconditions__` one-tick/flows/re-poll → per step pre-act RECOVERABLE detectors, ladder polled within the budget, gate, act, 250 ms tick loop postcondition→step detectors→global detectors, recoveries bounded by `max_attempts` with no re-entrancy and `resume_point` after, BUSINESS/HARD stop at once, retry only on effective-SAFE, `BLOCKED(APPROVAL_REQUIRED)` before any action, per-tick post-navigation allowlist check → `__success__` → `__outputs__` live read → regex → normalize → coerce; terminal outcomes assembled into `ReplayResult` in one place), `anton/evidence/log.py` (`RunLog`: run.jsonl through the Redactor, `observation` events, side files), `anton/api.py::invoke`, `anton replay` CLI (all §13 flags; `--escalate` exits 2 until phase 6; `--headless`/`ANTON_HEADLESS=1`).
+- `Surface.read` gained `"checked"`; `Surface.last_snapshot()` added; `PlaywrightSurface.screenshot_dir` is now required.
+- Tests: `tests/unit/test_engine.py` (purity via a fresh interpreter, params, coercion, `resume_point`, evaluator, the exit-30 pre-run refusal with a browser-launch tripwire, CLI usage errors, outputs-file rules), `tests/unit/test_evidence_log.py`, `tests/acceptance/test_aw_replay.py` (AW-1, 1b, 2, 3a/b/c, 4, 7a–e; artifacts selected via `ANTON_ARTIFACT_DIR`; step ids asserted structurally). Makefile: `verify-1`…`verify-7`, `replay`, `replay-notfound`, `approve`.
+- 12 real run directories under `runs/` (gitignored) from the gates — the source for phase 8's curated `evidence/`.
+
+## Verify results (phase 4, pasted from this session's terminal)
+```
+$ make verify-0
+.venv/bin/python -m ruff check .
+All checks passed!
+153 passed, 43 deselected in 3.03s
+$ make verify-1
+1 passed, 11 deselected in 4.74s
+$ make verify-1b
+1 passed, 11 deselected in 2.26s
+$ make verify-2
+1 passed, 11 deselected in 3.00s
+$ make verify-3
+3 passed, 9 deselected in 13.74s
+$ make verify-4
+1 passed, 11 deselected in 3.23s
+$ make verify-7
+5 passed, 7 deselected in 13.26s
+$ make verify-surface
+16 passed, 180 deselected in 26.99s
+$ make verify-target
+15 passed in 5.20s
+```
+Three bounded audit agents (engine vs §9; redaction/evidence/CLI vs §5/§8/§12/§13; tests/artifacts vs §19)
+found no blockers; every FIX was applied and re-verified above (decisions P4-17..P4-26). Highlights:
+screenshots now mask the member page's account-number column (the snapshot side already did),
+the post-navigation allowlist check runs every tick, sensitive outputs are masked by name,
+`--outputs-file` is pre-flighted (never under `runs/`/`evidence/`, 0600 enforced), `--record-video`
+is refused for masked profiles, tests honour `ANTON_ARTIFACT_DIR` and assert step ids structurally.
 
 ## What exists
 - `SPEC.md` (revised per the accepted Step-0 review; four author pins applied; `schema/loader.py`
@@ -107,35 +147,16 @@ An independent three-agent audit of the models against SPEC §4/§5/§7/§10.2/�
 every FIX item was applied (decisions P1-11..P1-15) and re-verified above.
 
 ## Owed to later phases (tracked here so nothing is silently claimed)
-- §16 "exit-30 pre-run case" (draft without `--allow-draft` / `DRAFT_RISKY` ⇒ FAILED POLICY_VIOLATION
-  result, run dir, no browser) lands with the replay engine start-up path in phase 4
-  (`ActionGate.draft_check` exists; the result/run-dir plumbing does not).
-- `inspect` shows a static lower bound of effective risk; wire it to `ActionGate.effective_risk` in phase 4.
-- Phase 4 must add: a predicate evaluator over snapshots (`UrlMatches`/`TitleMatches`/`TextVisible`/
-  `ElementVisible`/`FieldValue` (live read)/`Checked`/`AllOf`), `resume_point()`, the `observation` event
-  (P1-pin2: the pre-act observation is the snapshot the ladder resolved on), `ActError` ⇒ t=0 miss,
-  secret/sensitive-output registration into the Redactor, the run logger (`evidence/log.py`).
-- The gate's `route_prefix` must be passed by the engine (`GateContext.route_prefix`) — anchored risky rules
-  do not match on a prefixed tenant otherwise.
+- Phase-3 owed items closed in phase 4: exit-30 pre-run test (`test_draft_with_risky_step_is_refused_before_any_browser_launch`), predicate evaluator, `resume_point()`, `observation` event, `ActError` ⇒ t=0 miss, Redactor registration of secrets/sensitive outputs, `evidence/log.py`, `GateContext.route_prefix` passed by the engine. `inspect`'s effective-risk label stays a static lower bound by design (P4-15).
+- **Discovery spike (SPEC §17 phase 4) not run — needs `ANTHROPIC_API_KEY`.** Phase 5 starts with it: `discovery/agent.py` loop with `act/read/finish` only on the balance goal; gate = a `turns.jsonl` in `runs/` showing the model reached the pane and cited the balance ref in `finish`.
+- Phase 6 must wire: `ReplayOptions.escalate`/`escalate_timeout_s`/`console_port` (accepted, refused with exit 2 today), `LeaseState` transitions in the engine (`_gate` already passes `lease_state`; `lease` events are never emitted yet), `ApprovalStore` into `GateContext.approvals` (engine passes `None`), `BLOCKED(APPROVAL_DENIED)` (A1 still open for the author), and the human hand-back path through the same `resume_point`.
+- Phase 7 (overlay): `LoadedBundle.sources` is already honoured (`resolution.source == "overlay"` for retargeted steps/outputs); AW-6 needs `overlays/servicing.beta.yaml` and the `--overlay` acceptance leg.
+- The not-found page (`/member/999999`) matches the member-page masks' `applies_to`, so AW-2's screenshot fails closed to a solid PNG (P4-18) — acceptable; revisit only if phase 8 wants a readable not-found screenshot in `evidence/`.
 
 ## Deferred to phase 8
 - Whether `SPEC.md` and `CLAUDE.md` remain in the public repo root or move under `docs/`
   (author decision at polish time; nothing before then depends on their location).
 
 ## Next actions
-1. Author reviews phase-3 output (`git show --stat HEAD`, `make verify-surface`) and says "start phase 4".
-2. Phase 4 session (1 session): re-read SPEC §17 phase 4 and every section it references from the file —
-   §9 (start-up: param validation exit 2, loader, draft checks, launch at the effective entry URL,
-   `__preconditions__` pseudo-step with one-tick poll → flows → re-poll; per-step loop: pre-act global
-   RECOVERABLE detectors, ladder polled within the budget, gate, act, 250 ms tick evaluating postcondition →
-   step detectors → global detectors, RECOVERABLE → recovery + `resume_point()` with no re-entrancy,
-   BUSINESS → stop, HARD_FAILURE → evidence + FAILED, retry policy on EFFECTIVE risk, BLOCKED on
-   NeedsApproval, escalation mode off by default; `__success__` polled; `__outputs__` live read → normalize →
-   coerce; purity test), §4 (artifact/profile/overlay — hand-author `artifacts/read_savings_balance.json`
-   AND `artifacts/open_subaccount.json` per the §10.3 id rule, `specs/*.yaml` first), §5 (results,
-   exit codes, `--outputs-file`, redacted view), §6 (pinned labels/detector table), §8 (gate context incl.
-   `route_prefix`, secrets), §12 (`observation` event schema, run dir contents), §13 (`replay` flags),
-   §19 (AW-1, 1b, 2, 3a/b/c, 4, 7a–e assertions; the fixture's `Target.cli_env()` carries the exports).
-   Markup facts for the artifacts: decisions P3-19 (headings are `text`/`span`, header row is `cell`);
-   masks: SSN + Date of Birth cells in the pane, Account Number cell on the confirmation page.
-   Gate: `make verify-1 verify-1b verify-2 verify-3 verify-4 verify-7` green, paste output, commit.
+1. Author reviews phase-4 output (`git show --stat HEAD`, `make verify-1 verify-2 verify-3 verify-4 verify-7`) and says "start phase 5". Export `ANTHROPIC_API_KEY` first — phase 5 begins with the phase-4 discovery spike.
+2. Phase 5 session(s): re-read SPEC §17 phase 5 and every section it references — §10 (discovery loop, tool definitions `act/read/finish`, the §10.2 turn record, the §10.3 distiller and id rule, forbidden-extraction at distill time), §12 (`turns.jsonl`, `transcript.jsonl`, `rationale` events), §13 (`discover` flags), §19 discovery gate (human-verified). The replay engine, gate, Redactor, `RunLog` and `PlaywrightSurface` are reusable as-is; discovery must gate every action through `ActionGate.check` exactly as `ReplayEngine._gate` does and log through `RunLog`. The distilled artifacts must re-pass AW-1…AW-7 via `ANTON_ARTIFACT_DIR=<distilled dir>` with the tests unmodified.

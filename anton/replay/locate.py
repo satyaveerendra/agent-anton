@@ -11,14 +11,15 @@ The walk expands ``$param:`` tokens first, then tries candidates in order, check
 resolved element against ``ElementFingerprint`` with the per-tier strictness of SPEC §4:
 tiers 1–2 compare role + control_type + name_snippet (+ text_snippet when set); tier 3
 compares role + control_type only, so it genuinely survives label drift and sets drift_flag.
-``resume_point()`` (SPEC §9/§11) lands with the engine in phase 4.
+``resume_point()`` (SPEC §9/§11) is the ONE re-localization path shared by recoveries and
+human hand-back: it takes a predicate-evaluation callback so it stays free of any driver.
 """
 
 from __future__ import annotations
 
 import re
 import time
-from collections.abc import Callable, Mapping
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 from typing import Literal
 
@@ -32,6 +33,8 @@ from anton.schema.artifact import (
     LocatorLadder,
     LocatorTier,
     RoleNameLocator,
+    StateSignature,
+    StepSpec,
 )
 from anton.schema.result import LocatorResolution
 from anton.schema.snapshot import BBox, SemanticSnapshot, SnapshotElement
@@ -48,6 +51,7 @@ __all__ = [
     "WalkResult",
     "walk_ladder",
     "resolve_ladder_until",
+    "resume_point",
 ]
 
 INTERACTIVE_ROLES = frozenset({"button", "link", "textbox", "checkbox", "radio", "combobox"})
@@ -335,3 +339,25 @@ def resolve_ladder_until(
         if remaining <= 0:
             return None
         sleep(min(tick_s, remaining))
+
+
+# --- re-localization -----------------------------------------------------------------------
+
+
+def resume_point(
+    steps: Sequence[StepSpec],
+    success: StateSignature,
+    holds: Callable[[StateSignature], bool],
+    start: int,
+) -> int | None:
+    """SPEC §9/§11: evaluate the postconditions of every step from ``start`` on, plus ``success``,
+    and return the index to CONTINUE FROM after the furthest signature that currently holds —
+    ``len(steps)`` when ``success`` holds (go straight to extraction), ``i + 1`` when step ``i``'s
+    postcondition is the furthest that holds, ``None`` when nothing holds. Furthest-first, so a
+    page whose later checkpoint is satisfied never re-runs earlier steps."""
+    if holds(success):
+        return len(steps)
+    for i in range(len(steps) - 1, max(start, 0) - 1, -1):
+        if holds(steps[i].postcondition):
+            return i + 1
+    return None

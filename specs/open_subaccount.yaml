@@ -1,0 +1,28 @@
+# Declared interface for servicing.open_subaccount (SPEC §17 phase 4). Contains one RISKY step
+# (the confirm click), so replay needs --approve-risky (or an operator approval, phase 6).
+capability_id: servicing.open_subaccount
+name: Open a savings sub-account
+description: Open a new Savings sub-account for a member with a nickname and an initial deposit.
+inputs:
+  - name: member_id
+    type: STRING
+    description: The member's numeric id
+    required: true
+    pattern: "^[0-9]+$"
+  - name: initial_deposit
+    type: NUMBER
+    description: Opening deposit in dollars (the app enforces a $25 minimum)
+    required: true
+  - name: nickname
+    type: STRING
+    description: Free-text nickname for the new sub-account
+    required: true
+outputs:
+  - name: account_number
+    type: STRING
+    description: The newly opened sub-account's account number
+    sensitive: true
+business_outcomes:
+  MEMBER_NOT_FOUND: No member with that id exists
+  VALIDATION_ERROR: The app rejected an input (e.g. deposit below the $25 minimum)
+  PERMISSION_DENIED: The operator lacks permission to open sub-accounts

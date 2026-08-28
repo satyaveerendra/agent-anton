@@ -65,14 +65,15 @@ class PlaywrightSurface:
         redactor: Redactor,
         sensitive_elements: list[MaskSpec] | None = None,
         route_prefix: str = "",
-        screenshot_dir: Path | None = None,
+        *,
+        screenshot_dir: Path,
         on_event: EventSink | None = None,
     ) -> None:
         self.page = page
         self.redactor = redactor
         self.sensitive_elements = list(sensitive_elements or [])
         self.route_prefix = route_prefix
-        self.screenshot_dir = Path(screenshot_dir) if screenshot_dir else Path("runs/_screenshots")
+        self.screenshot_dir = Path(screenshot_dir)  # always inside the run directory (SPEC §12)
         self._on_event = on_event or (lambda kind, data: None)
         self._snapshot: SemanticSnapshot | None = None
         self._raw: RawSnapshot | None = None
@@ -129,6 +130,9 @@ class PlaywrightSurface:
         snapshot, raw = build_snapshot(self.page, self.redactor, self._mask_regions)
         self._snapshot, self._raw = snapshot, raw
         return snapshot
+
+    def last_snapshot(self) -> SemanticSnapshot:
+        return self._ensure()[0]
 
     def _ensure(self) -> tuple[SemanticSnapshot, RawSnapshot]:
         if self._snapshot is None or self._raw is None:
@@ -208,10 +212,12 @@ class PlaywrightSurface:
                 raise ActError("navigation", msg.splitlines()[0][:300]) from e
             raise ActError("timeout", msg.splitlines()[0][:300]) from e
 
-    def read(self, el: ResolvedElement, attr: Literal["text", "value"]) -> str:
+    def read(self, el: ResolvedElement, attr: Literal["text", "value", "checked"]) -> str:
         """LIVE, unredacted."""
         try:
-            if attr == "value":
+            if attr == "checked":
+                raw = "true" if el.handle.evaluate("el => !!el.checked") else "false"
+            elif attr == "value":
                 raw = el.handle.evaluate("el => (el.value ?? '')")
             else:
                 raw = el.handle.evaluate("el => (el.innerText ?? el.textContent ?? '')")

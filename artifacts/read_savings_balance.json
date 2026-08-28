@@ -1,0 +1,313 @@
+{
+  "schema_version": "1.0",
+  "capability_id": "servicing.read_savings_balance",
+  "name": "Read savings balance",
+  "description": "Look up a member by id and read the current balance of their Savings account.",
+  "version": "1.0.0",
+  "status": "approved",
+  "approval": {
+    "approved_at": "2026-08-28T16:04:33.123979Z",
+    "approved_by": "satya",
+    "artifact_sha256": "e4b668a703ba75bd9f29f6a8cd86aca3813b62482ab4d7ea28e2e5b6640c306e"
+  },
+  "app_profile": "profiles/servicing.yaml",
+  "requires_flows": [
+    "login"
+  ],
+  "preconditions": {
+    "all_of": [
+      {
+        "kind": "url_matches",
+        "regex": "^/search$"
+      },
+      {
+        "kind": "element_visible",
+        "ladder": {
+          "candidates": [
+            {
+              "tier": 1,
+              "rationale": "the header's sign-out link exists only when authenticated",
+              "frame_path": [],
+              "kind": "role_name",
+              "role": "link",
+              "name": "Sign out",
+              "exact": false
+            }
+          ],
+          "fingerprint": {
+            "role": "link",
+            "name_snippet": "Sign out",
+            "control_type": "a",
+            "text_snippet": null
+          }
+        }
+      }
+    ]
+  },
+  "inputs": [
+    {
+      "name": "member_id",
+      "type": "STRING",
+      "description": "The member's numeric id (e.g. 204817)",
+      "required": true,
+      "pattern": "^[0-9]+$",
+      "enum_values": null,
+      "sensitive": false
+    }
+  ],
+  "outputs": [
+    {
+      "name": "savings_balance",
+      "type": "NUMBER",
+      "description": "Current balance of the member's Savings account, in dollars",
+      "sensitive": false,
+      "enum_values": null,
+      "extraction": {
+        "locator": {
+          "candidates": [
+            {
+              "tier": 2,
+              "rationale": "the cell at (row whose Type is 'Savings') x (column headed 'Balance'); survives the tenant column shift",
+              "frame_path": [
+                "iframe[name=detail]"
+              ],
+              "kind": "label_relative",
+              "relation": "row_cell",
+              "anchor_text": "Savings",
+              "anchor_col_header": "Type",
+              "col_header": "Balance",
+              "target_role": null
+            }
+          ],
+          "fingerprint": {
+            "role": "cell",
+            "name_snippet": null,
+            "control_type": "td",
+            "text_snippet": null
+          }
+        },
+        "attr": "text",
+        "post_process_regex": null,
+        "normalize": "money"
+      }
+    }
+  ],
+  "business_outcomes": {
+    "MEMBER_NOT_FOUND": "No member with that id exists",
+    "VALIDATION_ERROR": "The app rejected an input",
+    "PERMISSION_DENIED": "The operator lacks permission for this action"
+  },
+  "steps": [
+    {
+      "id": "fill_member_id",
+      "description": "Type the member id into the search form",
+      "action": "FILL",
+      "target": {
+        "candidates": [
+          {
+            "tier": 1,
+            "rationale": "computed role 'textbox' + accessible name 'Member ID' (from its label cell / button text) is the stable semantic identity",
+            "frame_path": [],
+            "kind": "role_name",
+            "role": "textbox",
+            "name": "Member ID",
+            "exact": false
+          },
+          {
+            "tier": 2,
+            "rationale": "the control sits in the cell right of its 'Member ID' label; survives an attribute/name change",
+            "frame_path": [],
+            "kind": "label_relative",
+            "relation": "right_of_label",
+            "anchor_text": "Member ID",
+            "anchor_col_header": null,
+            "col_header": null,
+            "target_role": "textbox"
+          },
+          {
+            "tier": 3,
+            "rationale": "measured on the recorded app at 1280x900; last resort",
+            "frame_path": [],
+            "kind": "bbox",
+            "x": 0.0903,
+            "y": 0.0867,
+            "w": 0.0938,
+            "h": 0.0233
+          }
+        ],
+        "fingerprint": {
+          "role": "textbox",
+          "name_snippet": "Member ID",
+          "control_type": "input",
+          "text_snippet": null
+        }
+      },
+      "value": {
+        "kind": "param",
+        "name": "member_id"
+      },
+      "risk": "SAFE",
+      "requires_approval": false,
+      "postcondition": {
+        "all_of": [
+          {
+            "kind": "field_value",
+            "ladder": {
+              "candidates": [
+                {
+                  "tier": 1,
+                  "rationale": "computed role 'textbox' + accessible name 'Member ID' (from its label cell / button text) is the stable semantic identity",
+                  "frame_path": [],
+                  "kind": "role_name",
+                  "role": "textbox",
+                  "name": "Member ID",
+                  "exact": false
+                },
+                {
+                  "tier": 2,
+                  "rationale": "the control sits in the cell right of its 'Member ID' label; survives an attribute/name change",
+                  "frame_path": [],
+                  "kind": "label_relative",
+                  "relation": "right_of_label",
+                  "anchor_text": "Member ID",
+                  "anchor_col_header": null,
+                  "col_header": null,
+                  "target_role": "textbox"
+                },
+                {
+                  "tier": 3,
+                  "rationale": "measured on the recorded app at 1280x900; last resort",
+                  "frame_path": [],
+                  "kind": "bbox",
+                  "x": 0.0903,
+                  "y": 0.0867,
+                  "w": 0.0938,
+                  "h": 0.0233
+                }
+              ],
+              "fingerprint": {
+                "role": "textbox",
+                "name_snippet": "Member ID",
+                "control_type": "input",
+                "text_snippet": null
+              }
+            },
+            "expected": {
+              "kind": "param",
+              "name": "member_id"
+            }
+          }
+        ]
+      },
+      "wait_timeout_ms": 8000,
+      "retries": 1,
+      "detectors": []
+    },
+    {
+      "id": "click_search",
+      "description": "Submit the search; the app opens the member profile",
+      "action": "CLICK",
+      "target": {
+        "candidates": [
+          {
+            "tier": 1,
+            "rationale": "computed role 'button' + accessible name 'Search' (from its label cell / button text) is the stable semantic identity",
+            "frame_path": [],
+            "kind": "role_name",
+            "role": "button",
+            "name": "Search",
+            "exact": false
+          },
+          {
+            "tier": 2,
+            "rationale": "the visible text 'Search' is the label users see",
+            "frame_path": [],
+            "kind": "exact_text",
+            "text": "Search"
+          },
+          {
+            "tier": 3,
+            "rationale": "measured on the recorded app at 1280x900; last resort",
+            "frame_path": [],
+            "kind": "bbox",
+            "x": 0.0903,
+            "y": 0.1556,
+            "w": 0.0455,
+            "h": 0.0233
+          }
+        ],
+        "fingerprint": {
+          "role": "button",
+          "name_snippet": "Search",
+          "control_type": "button",
+          "text_snippet": null
+        }
+      },
+      "value": null,
+      "risk": "SAFE",
+      "requires_approval": false,
+      "postcondition": {
+        "all_of": [
+          {
+            "kind": "url_matches",
+            "regex": "^/member/[^/]+$"
+          },
+          {
+            "kind": "text_visible",
+            "regex": "Member Profile"
+          }
+        ]
+      },
+      "wait_timeout_ms": 8000,
+      "retries": 1,
+      "detectors": []
+    }
+  ],
+  "success": {
+    "all_of": [
+      {
+        "kind": "url_matches",
+        "regex": "^/member/[^/]+$"
+      },
+      {
+        "kind": "element_visible",
+        "ladder": {
+          "candidates": [
+            {
+              "tier": 2,
+              "rationale": "the cell at (row whose Type is 'Savings') x (column headed 'Balance'); survives the tenant column shift",
+              "frame_path": [
+                "iframe[name=detail]"
+              ],
+              "kind": "label_relative",
+              "relation": "row_cell",
+              "anchor_text": "Savings",
+              "anchor_col_header": "Type",
+              "col_header": "Balance",
+              "target_role": null
+            }
+          ],
+          "fingerprint": {
+            "role": "cell",
+            "name_snippet": null,
+            "control_type": "td",
+            "text_snippet": null
+          }
+        }
+      }
+    ]
+  },
+  "provenance": {
+    "origin": "hand_authored",
+    "discovery_run_id": null,
+    "model": null,
+    "created_at": "2026-08-28T16:04:32.730983Z",
+    "surface": "web",
+    "recorded_against": {
+      "app_id": "servicing",
+      "tenant_id": "alpha",
+      "app_version": "1",
+      "entry_url": "http://localhost:8000/search"
+    }
+  }
+}
