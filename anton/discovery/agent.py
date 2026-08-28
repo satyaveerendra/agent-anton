@@ -58,8 +58,8 @@ from anton.schema.loader import (
     load_bundle,
     repo_root,
 )
-from anton.schema.result import BlockedDetail, BlockedKind, DiscoveryResult, FailureKind
-from anton.schema.snapshot import SemanticSnapshot, TurnRecord
+from anton.schema.result import BlockedDetail, BlockedKind, DiscoveryResult, FailureKind, InterventionRequest
+from anton.schema.snapshot import SemanticSnapshot, SnapshotElement, TurnRecord
 from anton.schema.spec import CapabilitySpec
 from anton.surface.base import ConcreteAction, Surface
 
@@ -226,13 +226,20 @@ def discovery_bundle(profile: AppProfile, policy: PolicyConfig, url: str | None,
 
 class Discovery:
     def __init__(self, opts: DiscoverOptions, bundle: LoadedBundle, run_dir: Path, *, client: Any | None = None,
-                 surface_factory: Callable[[Path, Redactor, RunLog], tuple[Surface, Callable[[], None]]] | None = None, login: bool = True) -> None:
+                 surface_factory: Callable[[Path, Redactor, RunLog], tuple[Surface, Callable[[], None]]] | None = None, login: bool = True,
+                 escalation: Any | None = None) -> None:
         self.opts, self.bundle, self.run_dir = opts, bundle, run_dir
         policy = bundle.policy
         self.redactor = Redactor(policy.redact_field_patterns, policy.redact_value_patterns,
                                  known_values={opts.params[p.name] for p in opts.spec.inputs if p.sensitive and p.name in opts.params})
         self.log = RunLog(run_dir, self.redactor)
         self.gate = ActionGate(policy)
+        self.escalation = escalation
+        if opts.escalate and self.escalation is None:
+            from anton.escalation.controller import EscalationController
+
+            self.escalation = EscalationController(run_dir, run_dir.name, self.redactor, self.log, console_port=opts.console_port, timeout_s=opts.escalate_timeout_s, capability_id=opts.spec.capability_id, goal=opts.goal)
+        self.human_takeover = False
         self._client = client
         self._surface_factory = surface_factory
         self._login = login
@@ -240,6 +247,7 @@ class Discovery:
         self.transcript_path = run_dir / "transcript.jsonl"
         (run_dir / "digests").mkdir(exist_ok=True)
         self.read_values: list[str] = []
+        self.interventions: list[Any] = []
         self.secret_values: set[str] = {v for k, v in os.environ.items() if k.startswith("ANTON_SECRET_") and v}
         self.redactor.add_sensitive_values(self.secret_values)
 
@@ -273,8 +281,13 @@ class Discovery:
         from anton.surface.web import PlaywrightSurface
 
         opts = ReplayOptions(headless=self.opts.headless, record_video=self.opts.record_video)  # the CLI refuses video for masked profiles
-        pw, browser, context = _launch(opts, run_dir)
+        pw, browser, context = _launch(opts, run_dir, record_binding=self.escalation.record_binding if self.escalation is not None else None)
         page = context.new_page()
+        if self.escalation is not None:
+            from anton.escalation.recorder import arm_loaded_frames
+
+            self.escalation.pump = lambda ms: page.wait_for_timeout(ms)
+            self.escalation.on_take = lambda: (page.bring_to_front(), arm_loaded_frames(page))
         surface = PlaywrightSurface(page, redactor, self.bundle.profile.sensitive_elements, self.bundle.route_prefix, screenshot_dir=run_dir / "screenshots", on_event=log.event)
 
         def close() -> None:
@@ -323,8 +336,9 @@ class Discovery:
             client = anthropic.Anthropic()
         self.log.event("run", {"run_id": run_id, "mode": "discover", "goal": o.goal, "capability_id": o.spec.capability_id, "model": o.model, "entry_url": self.bundle.entry_url, "params": {p.name: ("***" if p.sensitive else o.params.get(p.name)) for p in o.spec.inputs}, "approve_risky": o.approve_risky, "escalate": o.escalate})
         self.surface, close = (self._surface_factory or self._default_surface)(self.run_dir, self.redactor, self.log)
-        engine = ReplayEngine(self.bundle, o.params, ReplayOptions(approve_risky=o.approve_risky, sleep=o.sleep), self.surface, self.gate, self.log, self.redactor, [])
+        engine = ReplayEngine(self.bundle, o.params, ReplayOptions(approve_risky=o.approve_risky, sleep=o.sleep), self.surface, self.gate, self.log, self.redactor, [], escalation=self.escalation)
         engine._secret_values |= self.secret_values
+        self._engine = engine
         messages: list[dict[str, Any]] = []
         final_snap: SemanticSnapshot | None = None
         try:
@@ -342,7 +356,8 @@ class Discovery:
             last_key: tuple[str, str] | None = None
             last_sig: str | None = None
             for turn in range(1, o.max_steps + 1):
-                if time.monotonic() - t_start > o.wall_clock_s:
+                parked = self.escalation.parked_s if self.escalation is not None else 0.0
+                if time.monotonic() - t_start - parked > o.wall_clock_s:  # parked time never counts (§10.1: hand-back continues)
                     reason = f"wall clock {o.wall_clock_s}s exceeded"
                     break
                 snap = self.surface.observe()
@@ -453,10 +468,40 @@ class Discovery:
                                         rec.gate_decision += ";act_failed"  # gated, but never executed: not a step (distiller)
                                 elif isinstance(decision, NeedsApproval):
                                     rec.gate_decision = "NeedsApproval"
-                                    rec.page_signature_after = last_sig or ""
-                                    self._append(self.turns_path, rec.model_dump(mode="json"))
-                                    blocked = BlockedDetail(kind=BlockedKind.APPROVAL_REQUIRED, step_id=f"turn{turn}", lease_state="AGENT_ACTIVE")
-                                    return self._result(run_id, o.goal, "BLOCKED", blocked=blocked, reason=f"RISKY action at turn {turn} without --approve-risky: {decision.detail}", turns=turn, started=started)
+                                    if self.escalation is None:
+                                        rec.page_signature_after = last_sig or ""
+                                        self._append(self.turns_path, rec.model_dump(mode="json"))
+                                        blocked = BlockedDetail(kind=BlockedKind.APPROVAL_REQUIRED, step_id=f"turn{turn}", lease_state="AGENT_ACTIVE")
+                                        return self._result(run_id, o.goal, "BLOCKED", blocked=blocked, reason=f"RISKY action at turn {turn} without --approve-risky: {decision.detail}", turns=turn, started=started)
+                                    res, irec = self._intervene("APPROVAL", turn, f"RISKY action needs operator approval: {decision.detail}", snap, el)
+                                    if res == "approved":
+                                        decision = engine._gate(concrete, f"turn{turn}", RiskClass.SAFE, action_id=irec.request_id)
+                                        if isinstance(decision, Allow):
+                                            rec.gate_decision = f"Allow:{decision.risk.value};operator"
+                                            self.log.event("approval_used", {"step_id": f"turn{turn}", "by": decision.approval_by, "rule": decision.rule})
+                                            if el is not None:
+                                                rec.executed = describe(snap, el)
+                                            engine._log_action(f"turn{turn}", concrete)
+                                            try:
+                                                self.surface.act(concrete, ACT_TIMEOUT_MS)
+                                                result_text = f"{action.value} executed (approved by operator)"
+                                            except Exception as e:  # noqa: BLE001
+                                                result_text = f"{action.value} failed: {str(e)[:200]}"
+                                                rec.gate_decision += ";act_failed"
+                                        else:
+                                            result_text = "denied by operator"
+                                            rec.gate_decision = "Deny:operator"
+                                    elif res == "denied":
+                                        result_text = "denied by operator"
+                                        rec.gate_decision = "Deny:operator"
+                                    elif res == "resumed":
+                                        result_text = "a human operator took control and handed back; re-observe the page"
+                                        rec.gate_decision = "NeedsApproval;human_takeover"
+                                    else:
+                                        rec.page_signature_after = last_sig or ""
+                                        self._append(self.turns_path, rec.model_dump(mode="json"))
+                                        blocked = BlockedDetail(kind=BlockedKind.ESCALATION_UNRESOLVED, step_id=f"turn{turn}", intervention_request_path="intervention.json", lease_state=self.escalation.lease.state.value)
+                                        return self._result(run_id, o.goal, "BLOCKED", blocked=blocked, reason=f"escalation {res} at turn {turn}", turns=turn, started=started)
                                 else:
                                     assert isinstance(decision, Deny)
                                     rec.gate_decision = f"Deny:{decision.reason.value}"
@@ -479,10 +524,21 @@ class Discovery:
                     no_change = no_change + 1 if sig == last_sig else 0
                     last_key, last_sig = key, sig
                     if same_action >= 3 or no_change >= 6:
-                        self._append(self.turns_path, rec.model_dump(mode="json"))
                         reason = "dead-end: " + ("3 identical actions with an unchanged page" if same_action >= 3 else "6 actions without a page change")
                         self.log.event("discovery", {"phase": "dead_end", "turn": turn, "reason": reason})
-                        break
+                        if self.escalation is not None:
+                            res, _irec = self._intervene("TAKEOVER", turn, reason, after, None)
+                            if res == "resumed":
+                                same_action, no_change, last_key, last_sig = 0, 0, None, None
+                                result_text += "; dead-end: a human operator took control and handed back; re-observe the page"
+                                reason = None
+                            else:
+                                self._append(self.turns_path, rec.model_dump(mode="json"))
+                                blocked = BlockedDetail(kind=BlockedKind.ESCALATION_UNRESOLVED, step_id=f"turn{turn}", intervention_request_path="intervention.json", lease_state=self.escalation.lease.state.value)
+                                return self._result(run_id, o.goal, "BLOCKED", blocked=blocked, reason=f"escalation {res} after {reason}", turns=turn, started=started)
+                        else:
+                            self._append(self.turns_path, rec.model_dump(mode="json"))
+                            break
                 elif tool.name == "finish":
                     outputs = args.get("outputs") or {}
                     rec.args = {"outputs": {str(k): str(v) for k, v in dict(outputs).items()}}
@@ -491,6 +547,20 @@ class Discovery:
                     recorded.append((rec, snap, before_path, digest_path))
                     final_snap = snap
                     stop = True
+                elif tool.name == "ask_human" and self.escalation is not None:
+                    why = str(args.get("reason", ""))[:300]
+                    rec.args = {"reason": why}
+                    self.log.event("discovery", {"phase": "ask_human", "turn": turn, "reason": why})
+                    res, _irec = self._intervene("TAKEOVER", turn, f"ask_human: {why}", snap, None)
+                    if res == "resumed":
+                        result_text = "a human operator took control and handed back; re-observe the page and continue"
+                        same_action, no_change, last_key, last_sig = 0, 0, None, None
+                        rec.page_signature_after = page_signature(self.surface.observe(), self.surface.path())
+                    else:
+                        rec.page_signature_after = last_sig or ""
+                        self._append(self.turns_path, rec.model_dump(mode="json"))
+                        blocked = BlockedDetail(kind=BlockedKind.ESCALATION_UNRESOLVED, step_id=f"turn{turn}", intervention_request_path="intervention.json", lease_state=self.escalation.lease.state.value)
+                        return self._result(run_id, o.goal, "BLOCKED", blocked=blocked, reason=f"escalation {res} after ask_human", turns=turn, started=started)
                 elif tool.name in ("give_up", "ask_human"):
                     why = str(args.get("reason", ""))[:300]
                     rec.args = {"reason": why}
@@ -520,8 +590,35 @@ class Discovery:
             self.log.event("engine_error", {"type": type(e).__name__, "detail": str(e)[:300]})
             status, failure_kind, reason = "FAILED", FailureKind.CHECKPOINT_MISS, f"engine error: {type(e).__name__}: {str(e)[:200]}"
         finally:
+            if self.escalation is not None:
+                self.escalation.close()
             close()
         return self._result(run_id, o.goal, status, reason=reason, artifact_path=artifact_path, turns=turns_done, started=started, failure_kind=failure_kind, blocked=blocked)
+
+    # --- escalation (SPEC §11: discovery) -------------------------------------------------------------------
+
+    def _intervene(self, kind: str, turn: int, reason: str, snap: SemanticSnapshot, el: SnapshotElement | None) -> tuple[str, Any]:
+        """Park on an intervention; on hand-back the loop simply re-observes and continues."""
+        assert self.escalation is not None
+        from anton.schema.artifact import ElementFingerprint
+
+        try:
+            shot = self.log.relative(Path(self.surface.screenshot(self.bundle.profile.sensitive_elements)))
+        except Exception:  # noqa: BLE001
+            shot = ""
+        req = InterventionRequest(
+            request_id=self.escalation.next_request_id(), run_id=self.run_dir.name, kind=kind, capability_id=self.opts.spec.capability_id, goal=self.opts.goal,  # type: ignore[arg-type]
+            step_id=f"turn{turn}", reason=self.redactor.scrub_text(reason)[:500], screenshot=shot, page_signature=page_signature(snap, self.surface.path()),
+            target_fingerprint=ElementFingerprint(role=el.role, control_type=el.control_type, name_snippet=el.name or None) if el is not None else None,
+            target_rationale="the model's chosen target for this turn" if el is not None else None, expected=None, console_url=self.escalation.console_url,
+            requested_at=datetime.now(UTC), lease_state="PAUSED",
+        )
+        res, irec = self.escalation.escalate(req)
+        self.interventions.append(irec)
+        if res == "resumed":
+            self.human_takeover = True
+            self.escalation.request("resume", by="agent")
+        return res, irec
 
     # --- finish → distill -------------------------------------------------------------------------------------
 
@@ -549,11 +646,11 @@ class Discovery:
             nxt = recorded[i + 1] if i + 1 < len(recorded) else None
             turns.append(RecordedTurn(record=rec, before=snap, after=nxt[1] if nxt else None, before_path=path, after_path=nxt[2] if nxt else None, viewport=self.surface.viewport()))
         ctx = DistillContext(spec=o.spec, profile=self.bundle.profile, profile_path=o.profile_path, params=o.params, entry_url=self.bundle.entry_url, route_prefix=self.bundle.route_prefix,
-                             run_id=run_id, model=o.model, secret_values=set(self.secret_values), read_values=list(self.read_values))
+                             run_id=run_id, model=o.model, secret_values=set(self.secret_values), read_values=list(self.read_values), human_takeover=self.human_takeover)
         sensitive = {p.name for p in o.spec.inputs if p.sensitive}
         meta = {"run_id": run_id, "goal": o.goal, "capability_id": o.spec.capability_id, "params": {k: ("***" if k in sensitive else v) for k, v in o.params.items()},
                 "entry_url": self.bundle.entry_url, "route_prefix": self.bundle.route_prefix, "model": o.model, "read_values": list(self.read_values),
-                "human_takeover": False, "profile_path": o.profile_path}
+                "human_takeover": self.human_takeover, "profile_path": o.profile_path}
         self.log.write_json("discovery.json", meta)  # through the Redactor like every other side file
         try:
             artifact = distill(turns, ctx)
@@ -580,7 +677,7 @@ class Discovery:
     def _result(self, run_id: str, goal: str, status: str, *, reason: str | None = None, artifact_path: str | None = None, turns: int = 0,
                 started: datetime, failure_kind: FailureKind | None = None, blocked: BlockedDetail | None = None) -> DiscoveryResult:
         res = DiscoveryResult(run_id=run_id, goal=goal, status=status, failure_kind=failure_kind if status == "FAILED" else None, blocked=blocked if status == "BLOCKED" else None,
-                              artifact_path=artifact_path if status == "SUCCESS" else None, turns=turns, reason=reason, started_at=started, finished_at=datetime.now(UTC))
+                              artifact_path=artifact_path if status == "SUCCESS" else None, turns=turns, reason=reason, interventions=list(self.interventions), started_at=started, finished_at=datetime.now(UTC))
         self.log.write_json("result.json", res)
         self.log.event("result", {"status": status, "reason": reason, "artifact_path": artifact_path})
         self.log.close()

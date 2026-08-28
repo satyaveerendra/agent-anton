@@ -10,6 +10,8 @@ assembled into a ``ReplayResult`` in ``run_replay`` — so the status/exit mappi
 
 from __future__ import annotations
 
+import hashlib
+import json
 import os
 import re
 import secrets
@@ -64,6 +66,8 @@ from anton.schema.result import (
     BlockedKind,
     FailureDetail,
     FailureKind,
+    InterventionRecord,
+    InterventionRequest,
     ReplayResult,
     ReplayStatus,
     StepResult,
@@ -216,10 +220,12 @@ class _Terminal(Exception):
 
 
 class _Failed(_Terminal):
-    def __init__(self, kind: FailureKind, step_id: str | None, expected: StateSignature | None, observed: str, evidence: list[str] | None = None, deny_reason: DenyReason | None = None) -> None:
+    def __init__(self, kind: FailureKind, step_id: str | None, expected: StateSignature | None, observed: str, evidence: list[str] | None = None, deny_reason: DenyReason | None = None, escalated: bool = False) -> None:
         super().__init__(f"{kind}: {observed}")
         self.kind, self.step_id, self.expected, self.observed, self.evidence = kind, step_id, expected, observed, list(evidence or [])
         self.deny_reason = deny_reason
+        #: True when escalation already ran for this failure (never escalate twice).
+        self.escalated = escalated
 
 
 class _Business(_Terminal):
@@ -229,9 +235,9 @@ class _Business(_Terminal):
 
 
 class _Blocked(_Terminal):
-    def __init__(self, kind: BlockedKind, step_id: str) -> None:
+    def __init__(self, kind: BlockedKind, step_id: str, intervention: bool = False) -> None:
         super().__init__(f"{kind} at {step_id}")
-        self.kind, self.step_id = kind, step_id
+        self.kind, self.step_id, self.intervention = kind, step_id, intervention
 
 
 @dataclass
@@ -260,8 +266,12 @@ class ReplayEngine:
         log: RunLog,
         redactor: Redactor,
         steps_out: list[StepResult],
+        escalation: Any | None = None,
     ) -> None:
         self.bundle = bundle
+        #: ``EscalationController`` when ``--escalate`` (SPEC §11); None ⇒ every trigger is terminal (§9 default mode).
+        self.escalation = escalation
+        self.interventions: list[InterventionRecord] = []
         self.artifact = bundle.artifact
         self.profile = bundle.profile
         self.params = dict(params)
@@ -272,7 +282,6 @@ class ReplayEngine:
         self.redactor = redactor
         self.steps_out = steps_out
         self.ev = Evaluator(surface, self.params)
-        self.lease_state = LeaseState.AGENT_ACTIVE
         self._secret_values: set[str] = set()
         self._recovery_uses: dict[tuple[str, str], int] = {}
         self._last_logged_url: str | None = None
@@ -282,6 +291,10 @@ class ReplayEngine:
         self._checked_url: str | None = None
         self._last_flow_failure = ""
         self._action_seq = 0
+
+    @property
+    def lease_state(self) -> LeaseState:
+        return self.escalation.lease.state if self.escalation is not None else LeaseState.AGENT_ACTIVE
 
     # --- observation / logging -------------------------------------------------------------------------
 
@@ -376,11 +389,14 @@ class ReplayEngine:
         Returns "handled" | "failed" | "exhausted"."""
         rec = det.recovery
         if isinstance(rec, Escalate):
-            # Default mode: an Escalate recovery is logged and treated as HARD_FAILURE (SPEC §9).
-            self.log.event("recovery", {"step_id": record.step_id, "detector": det.id, "recovery": "escalate", "mode": "default", "ok": False})
+            # Default mode: an Escalate recovery is logged and treated as HARD_FAILURE (SPEC §9); under
+            # --escalate the same _Failed becomes a TAKEOVER intervention in _main_step (§11).
+            mode = "escalate" if self.escalation is not None else "default"
+            self.log.event("recovery", {"step_id": record.step_id, "detector": det.id, "recovery": "escalate", "mode": mode, "ok": False})
             record.status = StepStatus.FAILED
             evidence = self._evidence(record, snap)
-            raise _Failed(FailureKind.APP_ERROR, record.step_id, expected, f"{det.id}: recovery is Escalate and the run is not in --escalate mode", evidence)
+            why = f"{det.id}: detector requests human escalation" if mode == "escalate" else f"{det.id}: recovery is Escalate and the run is not in --escalate mode"
+            raise _Failed(FailureKind.APP_ERROR, record.step_id, expected, why, evidence)
         key = (record.step_id, det.id)
         used = self._recovery_uses.get(key, 0)
         if used >= rec.max_attempts:
@@ -437,7 +453,7 @@ class ReplayEngine:
 
     # --- gate + act -----------------------------------------------------------------------------------------
 
-    def _gate(self, action: ConcreteAction, step_id: str, step_risk: RiskClass) -> Allow | Deny | NeedsApproval:
+    def _gate(self, action: ConcreteAction, step_id: str, step_risk: RiskClass, action_id: str | None = None) -> Allow | Deny | NeedsApproval:
         self._action_seq += 1
         ctx = GateContext(
             current_url=self.surface.url(),
@@ -446,15 +462,15 @@ class ReplayEngine:
             step_risk=step_risk,
             artifact_status=self.artifact.status,
             approve_risky=self.opts.approve_risky,
-            action_id=f"{step_id}#{self._action_seq}",
-            approvals=None,
+            action_id=action_id or f"{step_id}#{self._action_seq}",
+            approvals=self.escalation.approvals if self.escalation is not None else None,
             secret_values=frozenset(self._secret_values),
             route_prefix=self.bundle.route_prefix,
         )
         decision = self.gate.check(action, ctx)
         data: dict[str, Any] = {
             "step_id": step_id, "action": action.action.value, "decision": decision.kind,
-            "lease_state": self.lease_state.value, "owner": "agent",
+            "lease_state": self.lease_state.value, "owner": self.escalation.lease.owner if self.escalation is not None else "agent",
             "target": action.target.name if action.target is not None else None, "url": action.url,
         }
         if isinstance(decision, Allow):
@@ -501,6 +517,71 @@ class ReplayEngine:
             raise _Failed(FailureKind.CHECKPOINT_MISS, step_id, expected, f"internal error: {decision.reason.value}: {decision.detail}")
         record.status = StepStatus.FAILED
         raise _Failed(FailureKind.POLICY_VIOLATION, step_id, None, f"{decision.reason.value}: {decision.detail}", deny_reason=decision.reason)
+
+    # --- escalation (SPEC §11) ----------------------------------------------------------------------------
+
+    def _request(self, kind: str, step: StepSpec | None, step_id: str, reason: str, expected: StateSignature | None) -> InterventionRequest:
+        assert self.escalation is not None
+        try:
+            shot = self.log.relative(self.surface.screenshot(self.profile.sensitive_elements))
+        except Exception as e:  # noqa: BLE001
+            self.log.event("evidence_error", {"step_id": step_id, "detail": str(e)[:200]})
+            shot = ""
+        snap = self.surface.observe()
+        sig = f"{self.surface.path()}|{snap.title[:40]}|{hashlib.sha256(json.dumps([(e.ref, e.role, e.name) for e in snap.elements], default=str).encode()).hexdigest()[:16]}"
+        target = step.target if step is not None else None
+        return InterventionRequest(
+            request_id=self.escalation.next_request_id(), run_id=self.escalation.run_id, kind=kind, capability_id=self.artifact.capability_id, goal=None,  # type: ignore[arg-type]
+            step_id=step_id, reason=self.redactor.scrub_text(reason)[:500], screenshot=shot, page_signature=sig,
+            target_fingerprint=target.fingerprint if target is not None else None, target_rationale=target.candidates[0].rationale if target is not None else None,
+            expected=expected, console_url=self.escalation.console_url, requested_at=datetime.now(UTC), lease_state=LeaseState.PAUSED.value,
+        )
+
+    def _resume(self, index: int, sr: StepResult, record: InterventionRecord) -> int:
+        """Hand-back: re-localize, don't assume. Returns the index to continue from; marks the steps the
+        human completed; re-escalates once when nothing holds, then FAILED CHECKPOINT_MISS."""
+        assert self.escalation is not None
+        steps = self.artifact.steps
+        for attempt in (1, 2):
+            snap = self.surface.observe()
+            self._log_snapshot(sr.step_id, snap, force=True)
+            rp = resume_point(steps, self.artifact.success, lambda s, cur=snap: self.ev.signature_holds(s, cur), start=index)
+            self.log.event("resume_point", {"step_id": sr.step_id, "start": index, "resume_to": rp, "after": "hand-back"})
+            if rp is not None:
+                if rp > index:
+                    # §11/§5: the step whose postcondition the human satisfied is HUMAN_COMPLETED; the declared
+                    # steps jumped over on the way (the escalated one included) are SKIPPED.
+                    sr.status = StepStatus.HUMAN_COMPLETED if rp - 1 == index else StepStatus.SKIPPED
+                    for j in range(index + 1, rp):
+                        self.steps_out.append(StepResult(step_id=steps[j].id, status=StepStatus.HUMAN_COMPLETED if j == rp - 1 else StepStatus.SKIPPED, attempts=0, duration_ms=0))
+                record.resumed_at_step = OUTPUTS if rp >= len(steps) else steps[rp].id
+                self.escalation.request("resume", by="agent")
+                return rp
+            if attempt == 1:
+                record.resolution = "resume_failed"
+                req = self._request("TAKEOVER", steps[index], sr.step_id, "hand-back left no satisfied signature; the page matches no step's postcondition — take control again or abort", steps[index].postcondition)
+                res, record2 = self.escalation.re_escalate(req)
+                self.interventions.append(record2)
+                if res != "resumed":
+                    sr.status = StepStatus.BLOCKED
+                    raise _Blocked(BlockedKind.ESCALATION_UNRESOLVED, sr.step_id, intervention=True)
+                record = record2
+        sr.status = StepStatus.FAILED
+        self.escalation.request("resume", by="agent")  # the run ends under agent ownership
+        snap = self.surface.observe()
+        raise _Failed(FailureKind.CHECKPOINT_MISS, sr.step_id, steps[index].postcondition, f"after two human hand-backs no step postcondition or success signature holds; {self._summary(snap)}", self._evidence(sr, snap), escalated=True)
+
+    def _takeover(self, index: int, sr: StepResult, reason: str) -> int:
+        """TAKEOVER intervention for a FAILED-class terminal of a main step (§9 escalation mode)."""
+        assert self.escalation is not None
+        step = self.artifact.steps[index]
+        req = self._request("TAKEOVER", step, sr.step_id, reason, step.postcondition)
+        res, record = self.escalation.escalate(req)
+        self.interventions.append(record)
+        if res == "resumed":
+            return self._resume(index, sr, record)
+        sr.status = StepStatus.BLOCKED
+        raise _Blocked(BlockedKind.ESCALATION_UNRESOLVED, sr.step_id, intervention=True)
 
     # --- one step (main or flow) -------------------------------------------------------------------------
 
@@ -549,8 +630,25 @@ class ReplayEngine:
             if isinstance(decision, Deny):
                 self._deny(decision, record.step_id, step.postcondition, record)
             if isinstance(decision, NeedsApproval):
-                record.status = StepStatus.BLOCKED
-                raise _Blocked(BlockedKind.APPROVAL_REQUIRED, record.step_id)
+                if self.escalation is None or main_index is None:
+                    record.status = StepStatus.BLOCKED
+                    raise _Blocked(BlockedKind.APPROVAL_REQUIRED, record.step_id)
+                req = self._request("APPROVAL", step, record.step_id, f"RISKY step needs operator approval: {decision.detail}", step.postcondition)
+                res, irec = self.escalation.escalate(req)
+                self.interventions.append(irec)
+                if res == "approved":
+                    decision = self._gate(action, step.id, step.risk, action_id=req.request_id)  # the one-shot token is consumed here
+                    if not isinstance(decision, Allow):
+                        record.status = StepStatus.FAILED
+                        raise _Failed(FailureKind.POLICY_VIOLATION, record.step_id, None, f"operator approval did not authorize the action: {getattr(decision, 'detail', decision)}")
+                elif res == "denied":
+                    record.status = StepStatus.BLOCKED
+                    raise _Blocked(BlockedKind.APPROVAL_DENIED, record.step_id, intervention=True)
+                elif res == "resumed":
+                    return _StepOutcome("jump", resume_to=self._resume(main_index, record, irec))
+                else:
+                    record.status = StepStatus.BLOCKED
+                    raise _Blocked(BlockedKind.ESCALATION_UNRESOLVED, record.step_id, intervention=True)
             assert isinstance(decision, Allow)
             risk = decision.risk
             if decision.approval_by:
@@ -682,20 +780,34 @@ class ReplayEngine:
         self.steps_out.append(sr)
         t0 = time.monotonic()
         try:
-            outcome = self._execute_step(step, sr, sr, suppress=set(), main_index=index)
+            try:
+                outcome = self._execute_step(step, sr, sr, suppress=set(), main_index=index)
+            except _Failed as f:
+                if self.escalation is None or f.kind is FailureKind.POLICY_VIOLATION or f.escalated:
+                    raise
+                # HARD_FAILURE detector / Escalate recovery / internal miss under --escalate: TAKEOVER (§9, §11)
+                return self._takeover(index, sr, f"{f.kind.value}: {f.observed}")
         finally:
             sr.duration_ms = int((time.monotonic() - t0) * 1000)
         if outcome.kind == "passed":
             return index + 1
         if outcome.kind == "jump":
             assert outcome.resume_to is not None
+            done = {s.step_id for s in self.steps_out if s.status in (StepStatus.HUMAN_COMPLETED, StepStatus.SKIPPED)}
             for j in range(index + 1, outcome.resume_to):
-                self.steps_out.append(StepResult(step_id=self.artifact.steps[j].id, status=StepStatus.SKIPPED, attempts=0, duration_ms=0))
+                if self.artifact.steps[j].id not in done:
+                    self.steps_out.append(StepResult(step_id=self.artifact.steps[j].id, status=StepStatus.SKIPPED, attempts=0, duration_ms=0))
             return outcome.resume_to
+        kind = FailureKind.LOCATOR_EXHAUSTED if outcome.kind == "locator" else FailureKind.CHECKPOINT_MISS
+        if self.escalation is not None:
+            t1 = time.monotonic()
+            try:
+                return self._takeover(index, sr, f"{kind.value}: {outcome.observed}")
+            finally:
+                sr.duration_ms += int((time.monotonic() - t1) * 1000)
         sr.status = StepStatus.FAILED
         snap = self.surface.observe()
         evidence = self._evidence(sr, snap)
-        kind = FailureKind.LOCATOR_EXHAUSTED if outcome.kind == "locator" else FailureKind.CHECKPOINT_MISS
         raise _Failed(kind, step.id, outcome.expected, outcome.observed, evidence)
 
     def _success(self) -> None:
@@ -705,9 +817,33 @@ class ReplayEngine:
         last_timeout = self.artifact.steps[-1].wait_timeout_ms
         try:
             if not self._poll_signature(self.artifact.success, sr, time.monotonic() + last_timeout / 1000):
-                sr.status = StepStatus.FAILED
                 snap = self.surface.observe()
-                raise _Failed(FailureKind.CHECKPOINT_MISS, SUCCESS, self.artifact.success, f"success signature not met within {last_timeout} ms; {self._summary(snap)}", self._evidence(sr, snap))
+                observed = f"success signature not met within {last_timeout} ms; {self._summary(snap)}"
+                if self.escalation is not None:
+                    req = self._request("TAKEOVER", None, SUCCESS, f"CHECKPOINT_MISS: {observed}", self.artifact.success)
+                    res, record = self.escalation.escalate(req)
+                    self.interventions.append(record)
+                    for attempt in (1, 2):
+                        if res != "resumed":
+                            sr.status = StepStatus.BLOCKED
+                            raise _Blocked(BlockedKind.ESCALATION_UNRESOLVED, SUCCESS, intervention=True)
+                        again = self.surface.observe()
+                        self._log_snapshot(SUCCESS, again, force=True)
+                        if self.ev.signature_holds(self.artifact.success, again):
+                            record.resumed_at_step = OUTPUTS
+                            sr.status = StepStatus.HUMAN_COMPLETED
+                            self.escalation.request("resume", by="agent")
+                            return
+                        if attempt == 1:
+                            record.resolution = "resume_failed"
+                            req = self._request("TAKEOVER", None, SUCCESS, "hand-back left the success signature unsatisfied — take control again or abort", self.artifact.success)
+                            res, record = self.escalation.re_escalate(req)
+                            self.interventions.append(record)
+                    sr.status = StepStatus.FAILED
+                    self.escalation.request("resume", by="agent")
+                    raise _Failed(FailureKind.CHECKPOINT_MISS, SUCCESS, self.artifact.success, "after two human hand-backs the success signature still does not hold; " + self._summary(self.surface.observe()), self._evidence(sr), escalated=True)
+                sr.status = StepStatus.FAILED
+                raise _Failed(FailureKind.CHECKPOINT_MISS, SUCCESS, self.artifact.success, observed, self._evidence(sr, snap))
         finally:
             sr.duration_ms = int((time.monotonic() - t0) * 1000)
 
@@ -760,7 +896,7 @@ def _headless(opts: ReplayOptions) -> bool:
     return os.environ.get("ANTON_HEADLESS", "") == "1"
 
 
-def _launch(opts: ReplayOptions, run_dir: Path) -> tuple[Any, Any, Any]:
+def _launch(opts: ReplayOptions, run_dir: Path, record_binding: Callable[[Any, dict[str, Any]], None] | None = None) -> tuple[Any, Any, Any]:
     from playwright.sync_api import sync_playwright  # imported here: the engine module stays driver-free
 
     pw = sync_playwright().start()
@@ -769,6 +905,12 @@ def _launch(opts: ReplayOptions, run_dir: Path) -> tuple[Any, Any, Any]:
     if opts.record_video:
         kwargs["record_video_dir"] = str(run_dir / "video")
     context = browser.new_context(**kwargs)
+    if record_binding is not None:
+        from anton.escalation.recorder import (
+            install_recorder,  # at context creation, before any navigation (§11)
+        )
+
+        install_recorder(context, record_binding)
     return pw, browser, context
 
 
@@ -789,6 +931,8 @@ def run_replay(bundle: LoadedBundle, params: Mapping[str, str], opts: ReplayOpti
     steps: list[StepResult] = []
     terminal: _Terminal | None = None
     outputs: dict[str, str | int | float | bool] | None = None
+    interventions: list[InterventionRecord] = []
+    controller: Any | None = None
     log.event("run", {"run_id": run_id, "capability_id": artifact.capability_id, "version": artifact.version, "tenant_id": bundle.tenant_id, "overlay_id": bundle.overlay.overlay_id if bundle.overlay else None, "entry_url": bundle.entry_url, "params": {k: ("***" if k in {p.name for p in artifact.inputs if p.sensitive} else v) for k, v in params.items()}, "approve_risky": opts.approve_risky, "allow_draft": opts.allow_draft, "escalate": opts.escalate})
     risky = artifact.risky_steps()
     deny = gate.draft_check(artifact.status, opts.allow_draft, risky[0].id if risky else None)
@@ -799,12 +943,22 @@ def run_replay(bundle: LoadedBundle, params: Mapping[str, str], opts: ReplayOpti
     else:
         from anton.surface.web import PlaywrightSurface
 
-        pw, browser, context = _launch(opts, run_dir)
+        if opts.escalate:
+            from anton.escalation.controller import EscalationController
+
+            controller = EscalationController(run_dir, run_id, redactor, log, console_port=opts.console_port, timeout_s=opts.escalate_timeout_s, capability_id=artifact.capability_id)
+        pw, browser, context = _launch(opts, run_dir, record_binding=controller.record_binding if controller is not None else None)
         try:
             page = context.new_page()
+            if controller is not None:
+                from anton.escalation.recorder import arm_loaded_frames
+
+                controller.pump = lambda ms: page.wait_for_timeout(ms)  # the only sanctioned wait while parked (§11)
+                controller.on_take = lambda: (page.bring_to_front(), arm_loaded_frames(page))
             surface = PlaywrightSurface(page, redactor, bundle.profile.sensitive_elements, bundle.route_prefix, screenshot_dir=run_dir / "screenshots", on_event=log.event)
-            engine = ReplayEngine(bundle, params, opts, surface, gate, log, redactor, steps)
+            engine = ReplayEngine(bundle, params, opts, surface, gate, log, redactor, steps, escalation=controller)
             engine._secret_values |= env_secrets
+            interventions = engine.interventions
             try:
                 outputs = engine.execute()
             except _Terminal as t:
@@ -825,6 +979,8 @@ def run_replay(bundle: LoadedBundle, params: Mapping[str, str], opts: ReplayOpti
                 except Exception as e:  # noqa: BLE001
                     log.event("evidence_error", {"step_id": None, "detail": str(e)[:200]})
         finally:
+            if controller is not None:
+                controller.close()
             for closer in (context.close, browser.close, pw.stop):
                 try:
                     closer()
@@ -832,17 +988,18 @@ def run_replay(bundle: LoadedBundle, params: Mapping[str, str], opts: ReplayOpti
                     pass
 
     finished = datetime.now(UTC)
+    lease_state = controller.lease.state.value if controller is not None else LeaseState.AGENT_ACTIVE.value
     base: dict[str, Any] = {
         "run_id": run_id, "capability_id": artifact.capability_id, "version": artifact.version, "tenant_id": bundle.tenant_id,
         "overlay_id": bundle.overlay.overlay_id if bundle.overlay else None, "artifact_sha256": content_hash(bundle.base),
-        "steps": steps, "started_at": started, "finished_at": finished, "redacted_view": True,
+        "steps": steps, "interventions": interventions, "started_at": started, "finished_at": finished, "redacted_view": True,
     }
     if terminal is None:
         result = ReplayResult(status=ReplayStatus.SUCCESS, outputs=outputs or {}, **base)
     elif isinstance(terminal, _Business):
         result = ReplayResult(status=ReplayStatus.BUSINESS_OUTCOME, outcome_code=terminal.detector.outcome_code, outcome_step_id=terminal.step_id, outcome_detector_id=terminal.detector.id, outcome_detail=terminal.detail, **base)
     elif isinstance(terminal, _Blocked):
-        result = ReplayResult(status=ReplayStatus.BLOCKED, blocked=BlockedDetail(kind=terminal.kind, step_id=terminal.step_id, lease_state=LeaseState.AGENT_ACTIVE.value), **base)
+        result = ReplayResult(status=ReplayStatus.BLOCKED, blocked=BlockedDetail(kind=terminal.kind, step_id=terminal.step_id, intervention_request_path="intervention.json" if terminal.intervention else None, lease_state=lease_state), **base)
     else:
         assert isinstance(terminal, _Failed)
         result = ReplayResult(status=ReplayStatus.FAILED, failure=FailureDetail(kind=terminal.kind, step_id=terminal.step_id, expected=terminal.expected, observed_summary=redactor.scrub_text(terminal.observed), evidence=terminal.evidence), **base)

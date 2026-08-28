@@ -4,7 +4,7 @@ UNIT = -m pytest -q -m "not integration and not acceptance"
 
 .PHONY: test verify-0 verify-surface verify-target target discover discover-subaccount replay replay-notfound \
         verify-1 verify-1b verify-2 verify-3 verify-4 verify-5a verify-5b verify-6 verify-7 \
-        verify-evidence verify-all approve
+        verify-evidence verify-all approve demo-discovery-approval
 ACC = -m pytest -q -m acceptance tests/acceptance/test_aw_replay.py
 
 test:
@@ -58,12 +58,20 @@ verify-4:            ## AW-4 hard failure is debuggable; redaction holds under f
 verify-7:            ## AW-7 risky step gating
 	$(PY) $(ACC) -k "test_aw7"
 
+# --- phase 6: escalation -------------------------------------------------------------------
+verify-5a:           ## AW-5a escalation parks, is observable through the console, can be abandoned / times out / is denied
+	$(PY) -m pytest -q -m acceptance tests/acceptance/test_aw5a.py
+
+verify-5b:           ## AW-5b HUMAN round-trip (definition of done): take control, click Confirm in the live window, hand back
+	$(PY) tests/acceptance/verify_5b.py
+
+demo-discovery-approval: ## phase-6 human demo: discover with --escalate, operator clicks Approve once
+	$(PY) tests/acceptance/demo_discovery_approval.py
+
 # --- available from later phases (SPEC §17); each fails loudly until its phase lands ---
 define not_yet
 	@echo "$(1): not built until $(2) (SPEC §17)"; exit 1
 endef
-verify-5a:       ; $(call not_yet,verify-5a,phase 6)
-verify-5b:       ; $(call not_yet,verify-5b,phase 6)
 verify-6:        ; $(call not_yet,verify-6,phase 7)
 verify-evidence: ; $(call not_yet,verify-evidence,phase 8)
 verify-all:      ; $(call not_yet,verify-all,phase 8)

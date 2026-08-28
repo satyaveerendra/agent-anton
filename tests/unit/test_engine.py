@@ -220,8 +220,6 @@ def test_cli_replay_usage_errors_exit_2_without_a_run_dir(workspace: dict[str, P
     assert main(["replay", str(workspace["artifact"]), "--param", "member_id=abc"]) == 2
     assert "pattern" in capsys.readouterr().err
     assert main(["replay", str(workspace["artifact"]), "--param", "member_id"]) == 2
-    assert main(["replay", str(workspace["artifact"]), "--param", "member_id=1", "--escalate"]) == 2
-    assert "phase 6" in capsys.readouterr().err
     assert main(["replay", str(workspace["dir"] / "missing.json"), "--param", "member_id=1"]) == 2
     after = {p.name for p in runs.iterdir()} if runs.exists() else set()
     assert after == before  # SPEC §5: usage errors create no run directory

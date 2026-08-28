@@ -276,8 +276,6 @@ def cmd_discover(args: argparse.Namespace) -> int:
     from anton.schema.loader import load_profile
     from anton.schema.spec import load_spec
 
-    if args.escalate:
-        raise LoaderError("--escalate is not available until phase 6 (SPEC §17)")
     spec = load_spec(args.spec)
     profile = load_profile(args.profile)
     try:
@@ -299,7 +297,7 @@ def cmd_discover(args: argparse.Namespace) -> int:
         pass
     opts = DiscoverOptions(
         goal=args.goal, spec=spec, params=params, profile_path=profile_path, out_dir=Path(args.out), approve_risky=args.approve_risky,
-        escalate=False, escalate_timeout_s=args.escalate_timeout, console_port=args.console_port, record_video=args.record_video,
+        escalate=args.escalate, escalate_timeout_s=args.escalate_timeout, console_port=args.console_port, record_video=args.record_video,
         headless=True if args.headless else None,
     )
     result = run_discovery(opts, profile, policy, args.url)
@@ -351,7 +349,7 @@ def build_parser() -> argparse.ArgumentParser:
     p_disc.add_argument("--out", type=Path, default=Path("artifacts"), help="directory for the distilled artifact")
     p_disc.add_argument("--policy", type=Path, default=None)
     p_disc.add_argument("--approve-risky", action="store_true", dest="approve_risky")
-    p_disc.add_argument("--escalate", action="store_true", help="(phase 6) human escalation")
+    p_disc.add_argument("--escalate", action="store_true", help="enable human escalation (operator console)")
     p_disc.add_argument("--escalate-timeout", type=int, default=600, dest="escalate_timeout")
     p_disc.add_argument("--console-port", type=int, default=7071, dest="console_port")
     p_disc.add_argument("--record-video", action="store_true", dest="record_video")
@@ -366,7 +364,7 @@ def build_parser() -> argparse.ArgumentParser:
     p_replay.add_argument("--url", default=None, help="entry URL override; an origin-only URL keeps the profile's path")
     p_replay.add_argument("--approve-risky", action="store_true", dest="approve_risky", help="caller consent for RISKY steps")
     p_replay.add_argument("--allow-draft", action="store_true", dest="allow_draft")
-    p_replay.add_argument("--escalate", action="store_true", help="(phase 6) park on failure and hand off to a human")
+    p_replay.add_argument("--escalate", action="store_true", help="park on failure / consent and hand off to a human (operator console)")
     p_replay.add_argument("--escalate-timeout", type=int, default=600, dest="escalate_timeout")
     p_replay.add_argument("--console-port", type=int, default=7071, dest="console_port")
     p_replay.add_argument("--outputs-file", type=Path, default=None, dest="outputs_file", help="raw outputs (incl. sensitive) written here, mode 0600")

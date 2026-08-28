@@ -73,8 +73,6 @@ def test_not_yet_commands_exit_2_with_phase_message() -> None:
     assert r.returncode == EXIT_USAGE and "file not found" in r.stderr  # replay exists since phase 4; a missing file is a loader refusal
     r = run("discover", "--goal", "x", "--profile", "profiles/servicing.yaml", "--spec", "specs/read_savings_balance.yaml", "--param", "member_id=abc")
     assert r.returncode == EXIT_USAGE and "pattern" in r.stderr  # discover exists since phase 5; a bad --param is a usage error
-    r = run("discover", "--goal", "x", "--profile", "profiles/servicing.yaml", "--spec", "specs/read_savings_balance.yaml", "--param", "member_id=1", "--escalate")
-    assert r.returncode == EXIT_USAGE and "phase 6" in r.stderr
 
 
 def test_reapprove_after_edit_rebinds_the_hash(workspace: dict[str, Path]) -> None:

@@ -39,8 +39,6 @@ def invoke(
     Both exceptions mean "no run directory was created" — the CLI maps them to exit 2. The
     returned result is the redacted view; pass ``outputs_file`` for raw sensitive outputs.
     """
-    if escalate:
-        raise LoaderError("--escalate is not available until phase 6 (SPEC §17)")
     bundle = load_bundle(artifact, overlay_path=overlay, policy_path=policy, url=url)
     clean = validate_params(bundle.artifact, {k: str(v) for k, v in params.items()})
     if outputs_file is not None:
