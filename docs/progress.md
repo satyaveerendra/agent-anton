@@ -8,7 +8,18 @@
 - **Phase 4 — Replay first: complete** — 2026-08-28 (1 session, on budget). Gates `make verify-1`, `verify-1b`, `verify-2`, `verify-3`, `verify-4`, `verify-7` green (output below); `verify-0`, `verify-surface`, `verify-target` still green. **Discovery spike run and gate met** (after the author supplied the key later in the session): `runs/20260828T173306Z-a7898d/turns.jsonl` — 3 turns with `claude-sonnet-5`, the model reached the member pane and `finish` cited ref `e24` (the Savings row's Balance cell in `iframe[name=detail]`, harness-read as `$19,823.28` = the seeded value); every `act` has a matching `gate` event; no key/password/SSN anywhere in the run tree.
 - **Phase 5 — Discovery + distiller: complete** — 2026-08-28 (1 session, on budget). Real discovery runs with `claude-sonnet-5`: balance goal (3 turns) and sub-account goal with `--approve-risky` (10 turns); both distilled → `inspect` → `approve`; the distilled artifacts re-pass AW-1, 1b, 2, 3, 4 and 7 **unmodified** (output below). Discovery gate: evidence curated (`evidence/INDEX.md`); the human-verified checks are listed under "Next actions" for the author. Three bounded audits (loop/distiller vs §10, tests vs §16/§19, security of the discovery path) found no design blockers; every FIX applied (P5-14..P5-23), runs regenerated with the final code.
 - **Phase 6 — Escalation: complete** — 2026-08-28 (1 of its 2-session budget). `make verify-5a` green; two bounded audits (one blocker, P6-11, and every FIX applied); the round-trip mechanics automated (`tests/integration/test_escalation_roundtrip.py`); **AW-5b run by the author: PASS** (`evidence/escalation-demo/`); **discovery approval demo run by the author: PASS** (`evidence/escalation-demo-discovery/`).
-- **Phase 7 — Overlay: not started.**
+- **Phase 7 — Tenant overlay: complete** — 2026-08-28 (1 session, NOT cut). `make verify-6` green (no-overlay leg fails at `__preconditions__`; overlay leg SUCCESS with the same balance, tier ≤ 2, `source == "overlay"`, masks resolved; "Complete" stays RISKY on beta); one bounded audit, no blockers, every FIX applied (P7-6, P7-7). `evidence/replay-tenant-beta/` curated from the final code.
+- **Phase 8 — Polish: not started.**
+
+## What exists (phase 7)
+- `overlays/beta.yaml` (read_savings_balance → beta: entry `/portal/search`, prefix, `fill_member_id` → "Customer Number") and `overlays/beta.open_subaccount.yaml` (+ "Add Product", "Complete"); `tests/acceptance/test_aw6.py` (AW-6 both legs + the §6 "Complete stays RISKY" companion); Makefile `verify-6` with the `^- P7-CUT ·` / `ANTON_PHASE7_CUT=1` rule and `replay-beta`; `tests/unit/test_loader.py` loads the real overlays against the real artifacts.
+
+## Verify results (phase 7, pasted from this session's terminal)
+```
+$ make verify-6        3 passed          $ make verify-6 ANTON_PHASE7_CUT=1   → "verify-6: CUT (...); skipped"
+$ make verify-0        193 passed, 50 deselected   (final, after audit fixes P7-6/P7-7)
+$ make verify-surface  17 passed   verify-1 1 · verify-4 1 · verify-7 5 · verify-5a 3 passed (regression)
+```
 
 ## What exists (phase 6)
 - `anton/escalation/controller.py` — `Lease` (lock-protected §11 state machine, every transition logged as a `lease` event, edges cross-checked against `LEASE_TRANSITIONS`), `EscalationController` (pending `InterventionRequest` → `intervention.json`, console start, stderr URL, the park loop on `page.wait_for_timeout(250)` pumps, `--escalate-timeout` clock reset on transitions and human actions, one-shot `ApprovalStore`, recorder armed flag, `human_actions.jsonl` through the Redactor, `InterventionRecord`s).
@@ -192,5 +203,5 @@ every FIX item was applied (decisions P1-11..P1-15) and re-verified above.
   (author decision at polish time; nothing before then depends on their location).
 
 ## Next actions
-1. Author reviews phase-6 output (`git show --stat HEAD`, `evidence/escalation-demo/`, `evidence/escalation-demo-discovery/`, decisions P6-1..P6-23) and the open vetoes A1 (now implemented: operator Deny ⇒ `BLOCKED(APPROVAL_DENIED)`, AW-5a leg 3), A12, A13; then says "start phase 7".
-2. Phase 7 (overlay, 1 session): re-read SPEC §17 phase 7, §4 (TenantOverlay rules), §6 (tenant beta: `/portal` prefix, relabels, column shift), §19 AW-6, §12 (`replay-tenant-beta/`). Write `overlays/servicing.beta.yaml` (retarget `fill_member_id` to "Customer Number", output extraction, entry URL, prefix), the AW-6 acceptance leg (`make verify-6`) with `resolution.source == "overlay"` assertions, `--overlay` in the Makefile; the loader/engine already honour `LoadedBundle.sources` and `route_prefix`.
+1. Author reviews phase-7 output (`git show --stat HEAD`, `evidence/replay-tenant-beta/`, decisions P7-1..P7-5) and says "start phase 8".
+2. Phase 8 (polish, 1 session): re-read SPEC §17 phase 8, §12 (curate the remaining replay evidence folders from `runs/`, `evidence/INDEX.md`), §19 `verify-evidence` (the sensitive-value scan over evidence/, artifacts/, runs/ — never `.env*`) and `verify-all` (every non-cut target + reminders for AW-5b and the discovery gate), §14/§15 (README demo path, REPORT), §18/§20; decide SPEC/CLAUDE location (deferred item); `make verify-all` green is the definition of done.

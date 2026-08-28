@@ -1,0 +1,29 @@
+# TenantOverlay for tenant beta on the sub-account capability (not an AW-6 gate; shows the same
+# mechanism covers the risky flow): "Open Sub-Account" → "Add Product", "Confirm and open account" →
+# "Complete". The commit is still RISKY on beta through the URL-based policy rule (§8), whatever the
+# button says — the overlay cannot lower risk and does not try to.
+overlay_id: beta
+tenant_id: beta
+app_id: servicing
+base_capability_id: servicing.open_subaccount
+entry_url: http://localhost:8000/portal/search
+route_prefix: /portal
+step_overrides:
+  fill_member_id:
+    target:
+      candidates:
+        - {kind: role_name, tier: 1, role: textbox, name: Customer Number, rationale: "beta's label for the member id field"}
+        - {kind: label_relative, tier: 2, relation: right_of_label, anchor_text: Customer Number, target_role: textbox, rationale: "the field sits right of its label cell"}
+      fingerprint: {role: textbox, control_type: input, name_snippet: Customer Number}
+  click_open_sub_account:
+    target:
+      candidates:
+        - {kind: role_name, tier: 1, role: link, name: Add Product, frame_path: ["iframe[name=detail]"], rationale: "beta's label for the sub-account link, inside the detail pane"}
+        - {kind: exact_text, tier: 2, text: Add Product, frame_path: ["iframe[name=detail]"], rationale: "the visible link text"}
+      fingerprint: {role: link, control_type: a, name_snippet: Add Product}
+  click_confirm_and_open_account:
+    target:
+      candidates:
+        - {kind: role_name, tier: 1, role: button, name: Complete, rationale: "beta's label for the commit button on the review page"}
+        - {kind: exact_text, tier: 2, text: Complete, rationale: "the visible button text"}
+      fingerprint: {role: button, control_type: button, name_snippet: Complete}

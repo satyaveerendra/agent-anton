@@ -1,0 +1,18 @@
+# TenantOverlay for tenant beta (SPEC §4, §6): makes the alpha-recorded read_savings_balance
+# artifact pass on beta. An overlay may only NARROW or RETARGET — no new steps, no lowered risk, no
+# new outcome codes. Beta relabels "Member ID" → "Customer Number", prefixes every route with
+# /portal and shifts the accounts columns; the row_cell extraction and the masks survive the shift
+# untouched, so only the search field needs retargeting (its FieldValue postcondition follows).
+overlay_id: beta
+tenant_id: beta
+app_id: servicing
+base_capability_id: servicing.read_savings_balance
+entry_url: http://localhost:8000/portal/search
+route_prefix: /portal
+step_overrides:
+  fill_member_id:
+    target:
+      candidates:
+        - {kind: role_name, tier: 1, role: textbox, name: Customer Number, rationale: "beta's label for the member id field; the input's accessible name comes from that label cell"}
+        - {kind: label_relative, tier: 2, relation: right_of_label, anchor_text: Customer Number, target_role: textbox, rationale: "the field sits right of its label cell on beta too"}
+      fingerprint: {role: textbox, control_type: input, name_snippet: Customer Number}

@@ -100,7 +100,7 @@ class PlaywrightSurface:
     def path(self) -> str:
         """The current path with the active route_prefix stripped (what url_matches sees)."""
         path = re.sub(r"^https?://[^/]+", "", self.page.url).split("?", 1)[0].split("#", 1)[0] or "/"
-        if self.route_prefix and path.startswith(self.route_prefix):
+        if self.route_prefix and (path == self.route_prefix or path.startswith(self.route_prefix + "/")):
             path = path[len(self.route_prefix):] or "/"
         return path
 
@@ -248,6 +248,7 @@ class PlaywrightSurface:
         self.screenshot_dir.mkdir(parents=True, exist_ok=True)
         self._shots += 1
         out = self.screenshot_dir / f"shot-{self._shots:03d}.png"
+        self.last_masks: dict[str, str | None] = {}
         wanted = list(masks) if masks is not None else self._applicable_masks()
         # Masks are resolved on a fresh, unredacted enumeration of the current page. It is kept
         # local: the observed snapshot/raw pair must stay paired for resolve() (decisions P3-14).
@@ -265,6 +266,7 @@ class PlaywrightSurface:
                     hit = el.ref
                     break
             resolved[mask.id] = hit
+        self.last_masks = dict(resolved)
         missing = [mid for mid, ref in resolved.items() if ref is None and next(m for m in wanted if m.id == mid).required]
         if missing:
             for mid in missing:
@@ -282,6 +284,7 @@ class PlaywrightSurface:
                 injected.append(frame)
                 frame.evaluate(_MASK_JS, self._handle_for(raw, ref))
             self.page.screenshot(path=str(out), full_page=False)
+            self._emit("screenshot", {"path": out.name, "url": self.page.url, "masks": {mid: bool(ref) for mid, ref in resolved.items()}})
         except PlaywrightError as e:
             # Fail closed: a driver error while masking must never yield an unmasked image.
             self._emit("mask_unresolved", {"mask_id": "*", "url": self.page.url, "detail": str(e).splitlines()[0][:200]})

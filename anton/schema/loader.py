@@ -425,6 +425,9 @@ def load_bundle(
     effective_patterns = [route_prefix + p for p in profile.allowed_url_patterns]
     check_profile_subset(effective_patterns, pol)
     entry_url = _compose_entry_url(url, overlay, profile)
+    entry_path = urlsplit(entry_url).path or "/"
+    if route_prefix and not (entry_path == route_prefix or entry_path.startswith(route_prefix + "/")):
+        raise LoaderError(f"entry URL {entry_url!r} is outside the active route_prefix {route_prefix!r} (an overlay with a route_prefix must also carry a matching entry_url)")
     return LoadedBundle(
         base=base,
         artifact=effective,

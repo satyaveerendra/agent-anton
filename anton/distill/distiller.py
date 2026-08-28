@@ -124,7 +124,7 @@ def canonical_path_regex(path: str, params: dict[str, str], route_prefix: str = 
     """``/portal/member/204817`` → ``^/member/[^/]+$`` (prefix stripped, param-valued and numeric
     segments generalized, everything else escaped)."""
     p = urlsplit(path).path or "/"
-    if route_prefix and p.startswith(route_prefix):
+    if route_prefix and (p == route_prefix or p.startswith(route_prefix + "/")):
         p = p[len(route_prefix):] or "/"
     values = {v for v in params.values() if v}
     segs = []

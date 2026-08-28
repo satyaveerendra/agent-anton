@@ -589,7 +589,7 @@ class ReplayEngine:
         """SPEC §9 per-step algorithm. ``sr`` receives attempts/resolution; ``record`` receives detector
         hits and recoveries (== ``sr`` for a main step, the invoking step for a flow step)."""
         retries_left = step.retries
-        source = "overlay" if step.id in self.bundle.sources.step_targets else "artifact"
+        source = "overlay" if main_index is not None and step.id in self.bundle.sources.step_targets else "artifact"
         risk = RiskClass.SAFE
         resolved_once = False
         snap = self.surface.observe()
@@ -1016,11 +1016,19 @@ def run_replay(bundle: LoadedBundle, params: Mapping[str, str], opts: ReplayOpti
         view["outputs"] = {k: ("***" if k in {o.name for o in artifact.outputs if o.sensitive} else v) for k, v in view["outputs"].items()}
     redacted = ReplayResult.model_validate(redactor.scrub(view))
     log.write_json("result.json", redacted)
-    log.event("result", {"status": redacted.status.value, "run_dir": str(run_dir)})
+    log.event("result", {"status": redacted.status.value, "run_dir": _display_dir(run_dir)})
     log.close()
     if outputs_error is not None:
         raise OSError(f"run {run_id} finished {redacted.status.value} but --outputs-file could not be written: {outputs_error}") from outputs_error
     return redacted
+
+
+def _display_dir(path: Path) -> str:
+    """Repo-root-relative when inside the repo — a run.jsonl never carries a machine-specific path."""
+    try:
+        return str(Path(path).resolve().relative_to(repo_root().resolve()))
+    except ValueError:
+        return Path(path).name
 
 
 def check_outputs_path(path: Path) -> Path:

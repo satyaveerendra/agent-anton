@@ -315,7 +315,7 @@ def _origin(url: str) -> str:
 
 def _path(url: str, route_prefix: str = "") -> str:
     path = urlsplit(url).path or "/"
-    if route_prefix and path.startswith(route_prefix):
+    if route_prefix and (path == route_prefix or path.startswith(route_prefix + "/")):  # segment-aware: /portalfoo is not /portal
         path = path[len(route_prefix):] or "/"
     return path
 

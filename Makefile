@@ -4,7 +4,7 @@ UNIT = -m pytest -q -m "not integration and not acceptance"
 
 .PHONY: test verify-0 verify-surface verify-target target discover discover-subaccount replay replay-notfound \
         verify-1 verify-1b verify-2 verify-3 verify-4 verify-5a verify-5b verify-6 verify-7 \
-        verify-evidence verify-all approve demo-discovery-approval demo-discovery-approval-auto
+        verify-evidence verify-all approve demo-discovery-approval demo-discovery-approval-auto replay-beta
 ACC = -m pytest -q -m acceptance tests/acceptance/test_aw_replay.py
 
 test:
@@ -71,10 +71,23 @@ demo-discovery-approval: ## phase-6 human demo: discover with --escalate, operat
 demo-discovery-approval-auto: ## the same path with a simulated operator (mechanics only; not the human gate)
 	$(PY) tests/acceptance/demo_discovery_approval.py --auto
 
+# --- phase 7: tenant overlay -----------------------------------------------------------------
+# SPEC §19: a line matching '^- P7-CUT ·' in docs/decisions.md (or ANTON_PHASE7_CUT=1) marks the phase cut;
+# prose mentions never count. verify-all honours the same rule.
+PHASE7_CUT := $(shell (grep -q '^- P7-CUT ·' docs/decisions.md || [ "$(ANTON_PHASE7_CUT)" = "1" ]) && echo 1)
+verify-6:            ## AW-6 cross-tenant overlay (beta): fails without overlays/beta.yaml, passes with it
+ifeq ($(PHASE7_CUT),1)
+	@echo "verify-6: CUT (phase 7 marked '- P7-CUT ·' in docs/decisions.md or ANTON_PHASE7_CUT=1); skipped"
+else
+	$(PY) -m pytest -q -m acceptance tests/acceptance/test_aw6.py
+endif
+
+replay-beta:         ## replay the alpha-recorded balance artifact on tenant beta through the overlay
+	$(PY) -m anton replay artifacts/read_savings_balance.json --param member_id=$${MEMBER:-204817} --overlay overlays/beta.yaml
+
 # --- available from later phases (SPEC §17); each fails loudly until its phase lands ---
 define not_yet
 	@echo "$(1): not built until $(2) (SPEC §17)"; exit 1
 endef
-verify-6:        ; $(call not_yet,verify-6,phase 7)
 verify-evidence: ; $(call not_yet,verify-evidence,phase 8)
 verify-all:      ; $(call not_yet,verify-all,phase 8)

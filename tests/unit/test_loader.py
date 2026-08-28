@@ -290,3 +290,42 @@ def test_entry_url_rejects_non_http_and_origin_with_query() -> None:
 def test_glob_trailing_slash_and_fragment_do_not_matter() -> None:
     assert glob_match("/member/**", "/member/") and glob_match("/login", "/login/")
     assert glob_match("/member/**", "/member/1#top") and glob_match("/search", "/search?q=1")
+
+
+def test_shipped_beta_overlays_load_against_the_distilled_artifacts() -> None:
+    """The real overlays/beta*.yaml compose with the real artifacts under every §4 loader rule."""
+    from anton.policy.gate import load_policy
+    from anton.schema.artifact import FieldValue, RoleNameLocator
+    from anton.schema.loader import load_bundle
+
+    policy = load_policy(env={"ANTON_TARGET_ORIGIN": "http://127.0.0.1:8000"})
+    b = load_bundle("artifacts/read_savings_balance.json", overlay_path="overlays/beta.yaml", policy=policy, url="http://127.0.0.1:8000")
+    assert b.tenant_id == "beta" and b.route_prefix == "/portal" and b.entry_url == "http://127.0.0.1:8000/portal/search"
+    assert b.effective_allowed_url_patterns == ["/portal/login", "/portal/search", "/portal/member/**"]
+    fill = next(s for s in b.artifact.steps if s.id == "fill_member_id")
+    assert isinstance(fill.target.candidates[0], RoleNameLocator) and fill.target.candidates[0].name == "Customer Number"
+    fv = next(p for p in fill.postcondition.all_of if isinstance(p, FieldValue))
+    assert fv.ladder == fill.target  # the FieldValue followed the retarget (P1-3)
+    assert "fill_member_id" in b.sources.step_targets and "fill_member_id" in b.sources.step_postconditions
+    assert not b.sources.outputs and not b.sources.success  # row_cell extraction and success are untouched
+    b2 = load_bundle("artifacts/open_subaccount.json", overlay_path="overlays/beta.open_subaccount.yaml", policy=policy)
+    confirm = next(s for s in b2.artifact.steps if s.id == "click_confirm_and_open_account")
+    assert confirm.risk.value == "RISKY" and confirm.retries == 0 and confirm.target.candidates[0].name == "Complete"  # type: ignore[union-attr]
+    assert b2.sources.step_targets == {"fill_member_id", "click_open_sub_account", "click_confirm_and_open_account"}
+
+
+def test_prefix_stripping_is_segment_aware_and_entry_outside_prefix_is_refused(tmp_path, workspace) -> None:  # noqa: ANN001
+    import yaml
+
+    from anton.policy.gate import _path, load_policy
+    from anton.schema.loader import LoaderError, load_bundle
+
+    assert _path("http://x/portal/search", "/portal") == "/search" and _path("http://x/portal", "/portal") == "/"
+    assert _path("http://x/portalfoo/search", "/portal") == "/portalfoo/search"  # not stripped
+    policy = load_policy(env={"ANTON_TARGET_ORIGIN": "http://127.0.0.1:8000"})
+    overlay = yaml.safe_load(workspace["overlay"].read_text(encoding="utf-8"))
+    overlay.pop("entry_url")  # route_prefix without a matching entry_url
+    bad = tmp_path / "beta_noentry.yaml"
+    bad.write_text(yaml.safe_dump(overlay), encoding="utf-8")
+    with pytest.raises(LoaderError, match="outside the active route_prefix"):
+        load_bundle(workspace["artifact"], overlay_path=bad, policy=policy)
