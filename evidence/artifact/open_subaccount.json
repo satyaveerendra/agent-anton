@@ -1,0 +1,813 @@
+{
+  "schema_version": "1.0",
+  "capability_id": "servicing.open_subaccount",
+  "name": "Open a savings sub-account",
+  "description": "Open a new Savings sub-account for a member with a nickname and an initial deposit.",
+  "version": "1.0.0",
+  "status": "approved",
+  "approval": {
+    "approved_at": "2026-08-28T19:28:13.761221Z",
+    "approved_by": "satya",
+    "artifact_sha256": "935b5212e844d48e81e7759c058e1d7d77077f31276f7badb64dc290e1e5d45f"
+  },
+  "app_profile": "profiles/servicing.yaml",
+  "requires_flows": [
+    "login"
+  ],
+  "preconditions": {
+    "all_of": [
+      {
+        "kind": "url_matches",
+        "regex": "^/search$"
+      },
+      {
+        "kind": "element_visible",
+        "ladder": {
+          "candidates": [
+            {
+              "tier": 1,
+              "rationale": "the header's sign-out link exists only when authenticated",
+              "frame_path": [],
+              "kind": "role_name",
+              "role": "link",
+              "name": "Sign out",
+              "exact": false
+            }
+          ],
+          "fingerprint": {
+            "role": "link",
+            "name_snippet": "Sign out",
+            "control_type": "a",
+            "text_snippet": null
+          }
+        }
+      }
+    ]
+  },
+  "inputs": [
+    {
+      "name": "member_id",
+      "type": "STRING",
+      "description": "The member's numeric id",
+      "required": true,
+      "pattern": "^[0-9]+$",
+      "enum_values": null,
+      "sensitive": false
+    },
+    {
+      "name": "initial_deposit",
+      "type": "NUMBER",
+      "description": "Opening deposit in dollars (the app enforces a $25 minimum)",
+      "required": true,
+      "pattern": null,
+      "enum_values": null,
+      "sensitive": false
+    },
+    {
+      "name": "nickname",
+      "type": "STRING",
+      "description": "Free-text nickname for the new sub-account",
+      "required": true,
+      "pattern": null,
+      "enum_values": null,
+      "sensitive": false
+    }
+  ],
+  "outputs": [
+    {
+      "name": "account_number",
+      "type": "STRING",
+      "description": "The newly opened sub-account's account number",
+      "sensitive": true,
+      "enum_values": null,
+      "extraction": {
+        "locator": {
+          "candidates": [
+            {
+              "tier": 2,
+              "rationale": "the element sits right of its label 'Account Number'; survives a name/attribute change",
+              "frame_path": [],
+              "kind": "label_relative",
+              "relation": "right_of_label",
+              "anchor_text": "Account Number",
+              "anchor_col_header": null,
+              "col_header": null,
+              "target_role": "cell"
+            },
+            {
+              "tier": 3,
+              "rationale": "normalized box observed during discovery; last resort, sets drift_flag",
+              "frame_path": [],
+              "kind": "bbox",
+              "x": 0.1198,
+              "y": 0.1117,
+              "w": 0.094,
+              "h": 0.0311
+            }
+          ],
+          "fingerprint": {
+            "role": "cell",
+            "name_snippet": null,
+            "control_type": "td",
+            "text_snippet": null
+          }
+        },
+        "attr": "text",
+        "post_process_regex": null,
+        "normalize": "trim"
+      }
+    }
+  ],
+  "business_outcomes": {
+    "MEMBER_NOT_FOUND": "No member with that id exists",
+    "VALIDATION_ERROR": "The app rejected an input (e.g. deposit below the $25 minimum)",
+    "PERMISSION_DENIED": "The operator lacks permission to open sub-accounts"
+  },
+  "steps": [
+    {
+      "id": "fill_member_id",
+      "description": "Enter member ID to search for the member",
+      "action": "FILL",
+      "target": {
+        "candidates": [
+          {
+            "tier": 1,
+            "rationale": "computed role 'textbox' + accessible name 'Member ID' observed during discovery; the semantic identity of the control",
+            "frame_path": [],
+            "kind": "role_name",
+            "role": "textbox",
+            "name": "Member ID",
+            "exact": false
+          },
+          {
+            "tier": 2,
+            "rationale": "the element sits right of its label 'Member ID'; survives a name/attribute change",
+            "frame_path": [],
+            "kind": "label_relative",
+            "relation": "right_of_label",
+            "anchor_text": "Member ID",
+            "anchor_col_header": null,
+            "col_header": null,
+            "target_role": "textbox"
+          },
+          {
+            "tier": 3,
+            "rationale": "normalized box observed during discovery; last resort, sets drift_flag",
+            "frame_path": [],
+            "kind": "bbox",
+            "x": 0.0903,
+            "y": 0.0867,
+            "w": 0.0938,
+            "h": 0.0233
+          }
+        ],
+        "fingerprint": {
+          "role": "textbox",
+          "name_snippet": "Member ID",
+          "control_type": "input",
+          "text_snippet": null
+        }
+      },
+      "value": {
+        "kind": "param",
+        "name": "member_id"
+      },
+      "risk": "SAFE",
+      "requires_approval": false,
+      "postcondition": {
+        "all_of": [
+          {
+            "kind": "field_value",
+            "ladder": {
+              "candidates": [
+                {
+                  "tier": 1,
+                  "rationale": "computed role 'textbox' + accessible name 'Member ID' observed during discovery; the semantic identity of the control",
+                  "frame_path": [],
+                  "kind": "role_name",
+                  "role": "textbox",
+                  "name": "Member ID",
+                  "exact": false
+                },
+                {
+                  "tier": 2,
+                  "rationale": "the element sits right of its label 'Member ID'; survives a name/attribute change",
+                  "frame_path": [],
+                  "kind": "label_relative",
+                  "relation": "right_of_label",
+                  "anchor_text": "Member ID",
+                  "anchor_col_header": null,
+                  "col_header": null,
+                  "target_role": "textbox"
+                },
+                {
+                  "tier": 3,
+                  "rationale": "normalized box observed during discovery; last resort, sets drift_flag",
+                  "frame_path": [],
+                  "kind": "bbox",
+                  "x": 0.0903,
+                  "y": 0.0867,
+                  "w": 0.0938,
+                  "h": 0.0233
+                }
+              ],
+              "fingerprint": {
+                "role": "textbox",
+                "name_snippet": "Member ID",
+                "control_type": "input",
+                "text_snippet": null
+              }
+            },
+            "expected": {
+              "kind": "param",
+              "name": "member_id"
+            }
+          }
+        ]
+      },
+      "wait_timeout_ms": 8000,
+      "retries": 1,
+      "detectors": []
+    },
+    {
+      "id": "click_search",
+      "description": "Search for the member with the entered ID",
+      "action": "CLICK",
+      "target": {
+        "candidates": [
+          {
+            "tier": 1,
+            "rationale": "computed role 'button' + accessible name 'Search' observed during discovery; the semantic identity of the control",
+            "frame_path": [],
+            "kind": "role_name",
+            "role": "button",
+            "name": "Search",
+            "exact": false
+          },
+          {
+            "tier": 3,
+            "rationale": "normalized box observed during discovery; last resort, sets drift_flag",
+            "frame_path": [],
+            "kind": "bbox",
+            "x": 0.0903,
+            "y": 0.1556,
+            "w": 0.0455,
+            "h": 0.0233
+          }
+        ],
+        "fingerprint": {
+          "role": "button",
+          "name_snippet": "Search",
+          "control_type": "button",
+          "text_snippet": null
+        }
+      },
+      "value": null,
+      "risk": "SAFE",
+      "requires_approval": false,
+      "postcondition": {
+        "all_of": [
+          {
+            "kind": "url_matches",
+            "regex": "^/member/[^/]+$"
+          },
+          {
+            "kind": "text_visible",
+            "regex": "Member Profile"
+          }
+        ]
+      },
+      "wait_timeout_ms": 8000,
+      "retries": 1,
+      "detectors": []
+    },
+    {
+      "id": "click_open_sub_account",
+      "description": "Navigate to the sub-account opening form",
+      "action": "CLICK",
+      "target": {
+        "candidates": [
+          {
+            "tier": 1,
+            "rationale": "computed role 'link' + accessible name 'Open Sub-Account' observed during discovery; the semantic identity of the control",
+            "frame_path": [
+              "iframe[name=detail]"
+            ],
+            "kind": "role_name",
+            "role": "link",
+            "name": "Open Sub-Account",
+            "exact": false
+          },
+          {
+            "tier": 3,
+            "rationale": "normalized box observed during discovery; last resort, sets drift_flag",
+            "frame_path": [
+              "iframe[name=detail]"
+            ],
+            "kind": "bbox",
+            "x": 0.0148,
+            "y": 0.4011,
+            "w": 0.1169,
+            "h": 0.0211
+          }
+        ],
+        "fingerprint": {
+          "role": "link",
+          "name_snippet": "Open Sub-Account",
+          "control_type": "a",
+          "text_snippet": null
+        }
+      },
+      "value": null,
+      "risk": "SAFE",
+      "requires_approval": false,
+      "postcondition": {
+        "all_of": [
+          {
+            "kind": "url_matches",
+            "regex": "^/member/[^/]+/subaccount/new$"
+          },
+          {
+            "kind": "title_matches",
+            "regex": "New sub-account"
+          }
+        ]
+      },
+      "wait_timeout_ms": 8000,
+      "retries": 1,
+      "detectors": []
+    },
+    {
+      "id": "fill_nickname",
+      "description": "Fill nickname field",
+      "action": "FILL",
+      "target": {
+        "candidates": [
+          {
+            "tier": 1,
+            "rationale": "computed role 'textbox' + accessible name 'Nickname' observed during discovery; the semantic identity of the control",
+            "frame_path": [],
+            "kind": "role_name",
+            "role": "textbox",
+            "name": "Nickname",
+            "exact": false
+          },
+          {
+            "tier": 2,
+            "rationale": "the element sits right of its label 'Nickname'; survives a name/attribute change",
+            "frame_path": [],
+            "kind": "label_relative",
+            "relation": "right_of_label",
+            "anchor_text": "Nickname",
+            "anchor_col_header": null,
+            "col_header": null,
+            "target_role": "textbox"
+          },
+          {
+            "tier": 3,
+            "rationale": "normalized box observed during discovery; last resort, sets drift_flag",
+            "frame_path": [],
+            "kind": "bbox",
+            "x": 0.1061,
+            "y": 0.1189,
+            "w": 0.1562,
+            "h": 0.0233
+          }
+        ],
+        "fingerprint": {
+          "role": "textbox",
+          "name_snippet": "Nickname",
+          "control_type": "input",
+          "text_snippet": null
+        }
+      },
+      "value": {
+        "kind": "param",
+        "name": "nickname"
+      },
+      "risk": "SAFE",
+      "requires_approval": false,
+      "postcondition": {
+        "all_of": [
+          {
+            "kind": "field_value",
+            "ladder": {
+              "candidates": [
+                {
+                  "tier": 1,
+                  "rationale": "computed role 'textbox' + accessible name 'Nickname' observed during discovery; the semantic identity of the control",
+                  "frame_path": [],
+                  "kind": "role_name",
+                  "role": "textbox",
+                  "name": "Nickname",
+                  "exact": false
+                },
+                {
+                  "tier": 2,
+                  "rationale": "the element sits right of its label 'Nickname'; survives a name/attribute change",
+                  "frame_path": [],
+                  "kind": "label_relative",
+                  "relation": "right_of_label",
+                  "anchor_text": "Nickname",
+                  "anchor_col_header": null,
+                  "col_header": null,
+                  "target_role": "textbox"
+                },
+                {
+                  "tier": 3,
+                  "rationale": "normalized box observed during discovery; last resort, sets drift_flag",
+                  "frame_path": [],
+                  "kind": "bbox",
+                  "x": 0.1061,
+                  "y": 0.1189,
+                  "w": 0.1562,
+                  "h": 0.0233
+                }
+              ],
+              "fingerprint": {
+                "role": "textbox",
+                "name_snippet": "Nickname",
+                "control_type": "input",
+                "text_snippet": null
+              }
+            },
+            "expected": {
+              "kind": "param",
+              "name": "nickname"
+            }
+          }
+        ]
+      },
+      "wait_timeout_ms": 8000,
+      "retries": 1,
+      "detectors": []
+    },
+    {
+      "id": "fill_initial_deposit",
+      "description": "Fill initial deposit amount",
+      "action": "FILL",
+      "target": {
+        "candidates": [
+          {
+            "tier": 1,
+            "rationale": "computed role 'textbox' + accessible name 'Initial deposit' observed during discovery; the semantic identity of the control",
+            "frame_path": [],
+            "kind": "role_name",
+            "role": "textbox",
+            "name": "Initial deposit",
+            "exact": false
+          },
+          {
+            "tier": 2,
+            "rationale": "the element sits right of its label 'Initial deposit'; survives a name/attribute change",
+            "frame_path": [],
+            "kind": "label_relative",
+            "relation": "right_of_label",
+            "anchor_text": "Initial deposit",
+            "anchor_col_header": null,
+            "col_header": null,
+            "target_role": "textbox"
+          },
+          {
+            "tier": 3,
+            "rationale": "normalized box observed during discovery; last resort, sets drift_flag",
+            "frame_path": [],
+            "kind": "bbox",
+            "x": 0.1061,
+            "y": 0.1533,
+            "w": 0.0781,
+            "h": 0.0233
+          }
+        ],
+        "fingerprint": {
+          "role": "textbox",
+          "name_snippet": "Initial deposit",
+          "control_type": "input",
+          "text_snippet": null
+        }
+      },
+      "value": {
+        "kind": "param",
+        "name": "initial_deposit"
+      },
+      "risk": "SAFE",
+      "requires_approval": false,
+      "postcondition": {
+        "all_of": [
+          {
+            "kind": "field_value",
+            "ladder": {
+              "candidates": [
+                {
+                  "tier": 1,
+                  "rationale": "computed role 'textbox' + accessible name 'Initial deposit' observed during discovery; the semantic identity of the control",
+                  "frame_path": [],
+                  "kind": "role_name",
+                  "role": "textbox",
+                  "name": "Initial deposit",
+                  "exact": false
+                },
+                {
+                  "tier": 2,
+                  "rationale": "the element sits right of its label 'Initial deposit'; survives a name/attribute change",
+                  "frame_path": [],
+                  "kind": "label_relative",
+                  "relation": "right_of_label",
+                  "anchor_text": "Initial deposit",
+                  "anchor_col_header": null,
+                  "col_header": null,
+                  "target_role": "textbox"
+                },
+                {
+                  "tier": 3,
+                  "rationale": "normalized box observed during discovery; last resort, sets drift_flag",
+                  "frame_path": [],
+                  "kind": "bbox",
+                  "x": 0.1061,
+                  "y": 0.1533,
+                  "w": 0.0781,
+                  "h": 0.0233
+                }
+              ],
+              "fingerprint": {
+                "role": "textbox",
+                "name_snippet": "Initial deposit",
+                "control_type": "input",
+                "text_snippet": null
+              }
+            },
+            "expected": {
+              "kind": "param",
+              "name": "initial_deposit"
+            }
+          }
+        ]
+      },
+      "wait_timeout_ms": 8000,
+      "retries": 1,
+      "detectors": []
+    },
+    {
+      "id": "click_terms",
+      "description": "Accept the sub-account terms checkbox",
+      "action": "CLICK",
+      "target": {
+        "candidates": [
+          {
+            "tier": 1,
+            "rationale": "computed role 'checkbox' + accessible name 'Terms' observed during discovery; the semantic identity of the control",
+            "frame_path": [],
+            "kind": "role_name",
+            "role": "checkbox",
+            "name": "Terms",
+            "exact": false
+          },
+          {
+            "tier": 2,
+            "rationale": "the element sits right of its label 'Terms'; survives a name/attribute change",
+            "frame_path": [],
+            "kind": "label_relative",
+            "relation": "right_of_label",
+            "anchor_text": "Terms",
+            "anchor_col_header": null,
+            "col_header": null,
+            "target_role": "checkbox"
+          },
+          {
+            "tier": 3,
+            "rationale": "normalized box observed during discovery; last resort, sets drift_flag",
+            "frame_path": [],
+            "kind": "bbox",
+            "x": 0.1092,
+            "y": 0.1911,
+            "w": 0.0102,
+            "h": 0.0144
+          }
+        ],
+        "fingerprint": {
+          "role": "checkbox",
+          "name_snippet": "Terms",
+          "control_type": "input",
+          "text_snippet": null
+        }
+      },
+      "value": null,
+      "risk": "SAFE",
+      "requires_approval": false,
+      "postcondition": {
+        "all_of": [
+          {
+            "kind": "checked",
+            "ladder": {
+              "candidates": [
+                {
+                  "tier": 1,
+                  "rationale": "computed role 'checkbox' + accessible name 'Terms' observed during discovery; the semantic identity of the control",
+                  "frame_path": [],
+                  "kind": "role_name",
+                  "role": "checkbox",
+                  "name": "Terms",
+                  "exact": false
+                },
+                {
+                  "tier": 2,
+                  "rationale": "the element sits right of its label 'Terms'; survives a name/attribute change",
+                  "frame_path": [],
+                  "kind": "label_relative",
+                  "relation": "right_of_label",
+                  "anchor_text": "Terms",
+                  "anchor_col_header": null,
+                  "col_header": null,
+                  "target_role": "checkbox"
+                },
+                {
+                  "tier": 3,
+                  "rationale": "normalized box observed during discovery; last resort, sets drift_flag",
+                  "frame_path": [],
+                  "kind": "bbox",
+                  "x": 0.1092,
+                  "y": 0.1911,
+                  "w": 0.0102,
+                  "h": 0.0144
+                }
+              ],
+              "fingerprint": {
+                "role": "checkbox",
+                "name_snippet": "Terms",
+                "control_type": "input",
+                "text_snippet": null
+              }
+            },
+            "expected": true
+          }
+        ]
+      },
+      "wait_timeout_ms": 8000,
+      "retries": 1,
+      "detectors": []
+    },
+    {
+      "id": "click_continue_to_review",
+      "description": "Proceed to review step",
+      "action": "CLICK",
+      "target": {
+        "candidates": [
+          {
+            "tier": 1,
+            "rationale": "computed role 'button' + accessible name 'Continue to review' observed during discovery; the semantic identity of the control",
+            "frame_path": [],
+            "kind": "role_name",
+            "role": "button",
+            "name": "Continue to review",
+            "exact": false
+          },
+          {
+            "tier": 3,
+            "rationale": "normalized box observed during discovery; last resort, sets drift_flag",
+            "frame_path": [],
+            "kind": "bbox",
+            "x": 0.1061,
+            "y": 0.22,
+            "w": 0.0988,
+            "h": 0.0233
+          }
+        ],
+        "fingerprint": {
+          "role": "button",
+          "name_snippet": "Continue to review",
+          "control_type": "button",
+          "text_snippet": null
+        }
+      },
+      "value": null,
+      "risk": "SAFE",
+      "requires_approval": false,
+      "postcondition": {
+        "all_of": [
+          {
+            "kind": "url_matches",
+            "regex": "^/member/[^/]+/subaccount/review$"
+          },
+          {
+            "kind": "text_visible",
+            "regex": "Review new sub-account"
+          }
+        ]
+      },
+      "wait_timeout_ms": 8000,
+      "retries": 1,
+      "detectors": []
+    },
+    {
+      "id": "click_confirm_and_open_account",
+      "description": "Confirm and open the sub-account",
+      "action": "CLICK",
+      "target": {
+        "candidates": [
+          {
+            "tier": 1,
+            "rationale": "computed role 'button' + accessible name 'Confirm and open account' observed during discovery; the semantic identity of the control",
+            "frame_path": [],
+            "kind": "role_name",
+            "role": "button",
+            "name": "Confirm and open account",
+            "exact": false
+          },
+          {
+            "tier": 3,
+            "rationale": "normalized box observed during discovery; last resort, sets drift_flag",
+            "frame_path": [],
+            "kind": "bbox",
+            "x": 0.0125,
+            "y": 0.2133,
+            "w": 0.1347,
+            "h": 0.0233
+          }
+        ],
+        "fingerprint": {
+          "role": "button",
+          "name_snippet": "Confirm and open account",
+          "control_type": "button",
+          "text_snippet": null
+        }
+      },
+      "value": null,
+      "risk": "RISKY",
+      "requires_approval": true,
+      "postcondition": {
+        "all_of": [
+          {
+            "kind": "url_matches",
+            "regex": "^/member/[^/]+/subaccount/confirmation$"
+          },
+          {
+            "kind": "text_visible",
+            "regex": "Sub-account opened"
+          }
+        ]
+      },
+      "wait_timeout_ms": 8000,
+      "retries": 0,
+      "detectors": []
+    }
+  ],
+  "success": {
+    "all_of": [
+      {
+        "kind": "url_matches",
+        "regex": "^/member/[^/]+/subaccount/confirmation$"
+      },
+      {
+        "kind": "text_visible",
+        "regex": "Sub-account opened"
+      },
+      {
+        "kind": "element_visible",
+        "ladder": {
+          "candidates": [
+            {
+              "tier": 2,
+              "rationale": "the element sits right of its label 'Account Number'; survives a name/attribute change",
+              "frame_path": [],
+              "kind": "label_relative",
+              "relation": "right_of_label",
+              "anchor_text": "Account Number",
+              "anchor_col_header": null,
+              "col_header": null,
+              "target_role": "cell"
+            },
+            {
+              "tier": 3,
+              "rationale": "normalized box observed during discovery; last resort, sets drift_flag",
+              "frame_path": [],
+              "kind": "bbox",
+              "x": 0.1198,
+              "y": 0.1117,
+              "w": 0.094,
+              "h": 0.0311
+            }
+          ],
+          "fingerprint": {
+            "role": "cell",
+            "name_snippet": null,
+            "control_type": "td",
+            "text_snippet": null
+          }
+        }
+      }
+    ]
+  },
+  "provenance": {
+    "origin": "discovery",
+    "discovery_run_id": "20260828T192729Z-07ca25",
+    "model": "claude-sonnet-5",
+    "created_at": "2026-08-28T19:27:29Z",
+    "surface": "web",
+    "recorded_against": {
+      "app_id": "servicing",
+      "tenant_id": "alpha",
+      "app_version": "1",
+      "entry_url": "http://127.0.0.1:64800/search"
+    }
+  }
+}

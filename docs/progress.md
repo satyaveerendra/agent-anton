@@ -6,7 +6,25 @@
 - **Phase 2 — Target app: complete** — 2026-08-28. Gate `make verify-target` green.
 - **Phase 3 — Surface + policy: complete** — 2026-08-28 (1 of its 2-session budget). Gates `make verify-0` + `make verify-surface` green (output below); `verify-target` still green.
 - **Phase 4 — Replay first: complete** — 2026-08-28 (1 session, on budget). Gates `make verify-1`, `verify-1b`, `verify-2`, `verify-3`, `verify-4`, `verify-7` green (output below); `verify-0`, `verify-surface`, `verify-target` still green. **Discovery spike run and gate met** (after the author supplied the key later in the session): `runs/20260828T173306Z-a7898d/turns.jsonl` — 3 turns with `claude-sonnet-5`, the model reached the member pane and `finish` cited ref `e24` (the Savings row's Balance cell in `iframe[name=detail]`, harness-read as `$19,823.28` = the seeded value); every `act` has a matching `gate` event; no key/password/SSN anywhere in the run tree.
-- **Phase 5 — Discovery: not started.**
+- **Phase 5 — Discovery + distiller: complete** — 2026-08-28 (1 session, on budget). Real discovery runs with `claude-sonnet-5`: balance goal (3 turns) and sub-account goal with `--approve-risky` (10 turns); both distilled → `inspect` → `approve`; the distilled artifacts re-pass AW-1, 1b, 2, 3, 4 and 7 **unmodified** (output below). Discovery gate: evidence curated (`evidence/INDEX.md`); the human-verified checks are listed under "Next actions" for the author. Three bounded audits (loop/distiller vs §10, tests vs §16/§19, security of the discovery path) found no design blockers; every FIX applied (P5-14..P5-23), runs regenerated with the final code.
+- **Phase 6 — Escalation: not started.**
+
+## What exists (phase 5)
+- `anton/schema/spec.py` (`CapabilitySpec`: inputs + outputs minus extraction, loaded from `specs/*.yaml`), `anton/discovery/describe.py` (element descriptors from snapshot geometry: label context, table header row, row anchor + its column header), `anton/discovery/agent.py` (the §10.1 loop: login through the replay engine, digest ≤60 + masked screenshot, tools act/read/finish/give_up/ask_human, every act gated, per-tick post-navigation check, dead-end rule, `TurnRecord` per turn, scrubbed `transcript.jsonl`, `digests/`, `discovery.json`, `DiscoveryResult`), `anton/distill/distiller.py` (§10.3 rules 1–12 + `redistill` from a run dir), `anton discover` CLI (all §13 flags; `--escalate` exits 2 until phase 6), Makefile `discover` / `discover-subaccount`.
+- `artifacts/read_savings_balance.json` (distilled from run `20260828T192716Z-14d564`, 2 steps) and `artifacts/open_subaccount.json` (run `20260828T192729Z-07ca25`, 8 steps incl. the RISKY confirm click taken from the gate decision), both approved; the hand-authored ones moved to `tests/fixtures/`.
+- Tests: `tests/unit/test_distill.py` (binding incl. `$50.00`, canonicalization, ids, ladders/extraction rule, landmark + title fallback, Checked/RISKY, secrets, redistill determinism), `tests/unit/test_discovery_loop.py` (fake client + fake surface: dead-end 3/6, READ never advances, ask_human → give_up, BLOCKED without consent, finish → loadable draft), `tests/unit/test_cli.py` updated.
+- `evidence/` — `discovery-run/`, `discovery-run-subaccount/`, `artifact/`, `INDEX.md`.
+
+## Verify results (phase 5, pasted from this session's terminal — distilled artifacts under test)
+```
+$ make verify-0        All checks passed!   179 passed, 43 deselected   (final)
+$ make verify-1   1 passed    $ make verify-1b  1 passed    $ make verify-2  1 passed
+$ make verify-3   3 passed    $ make verify-4   1 passed    $ make verify-7  5 passed
+$ make verify-surface  16 passed        $ make verify-target  15 passed
+$ anton discover … read_savings_balance  → SUCCESS, 3 turns, run 20260828T192716Z-14d564  (--out artifacts)
+$ anton discover … open_subaccount --approve-risky → SUCCESS, 10 turns, run 20260828T192729Z-07ca25
+$ redistill(run) content hash == artifacts/*.json content hash: True / True; approval bound: True / True
+```
 
 ## What exists (phase 4)
 - `specs/read_savings_balance.yaml`, `specs/open_subaccount.yaml` — the declared interfaces (inputs/outputs/outcome space).
@@ -158,5 +176,6 @@ every FIX item was applied (decisions P1-11..P1-15) and re-verified above.
   (author decision at polish time; nothing before then depends on their location).
 
 ## Next actions
-1. Author reviews phase-4 output (`git show --stat HEAD~1 HEAD`, `make verify-1 verify-2 verify-3 verify-4 verify-7`, `runs/20260828T173306Z-a7898d/turns.jsonl`) and says "start phase 5". `ANTHROPIC_API_KEY` must be exported in the environment (never pasted into chat or written to a file); the key used for the spike was pasted into chat and should be rotated.
-2. Phase 5 session(s): re-read SPEC §17 phase 5 and every section it references — §10 (discovery loop, tool definitions `act/read/finish`, the §10.2 turn record, the §10.3 distiller and id rule, forbidden-extraction at distill time), §12 (`turns.jsonl`, `transcript.jsonl`, `rationale` events), §13 (`discover` flags), §19 discovery gate (human-verified). The replay engine, gate, Redactor, `RunLog` and `PlaywrightSurface` are reusable as-is; discovery must gate every action through `ActionGate.check` exactly as `ReplayEngine._gate` does and log through `RunLog`. The distilled artifacts must re-pass AW-1…AW-7 via `ANTON_ARTIFACT_DIR=<distilled dir>` with the tests unmodified.
+1. **Discovery gate (human-verified, SPEC §19)** — author checks: `evidence/discovery-run/` and `evidence/discovery-run-subaccount/` each contain `turns.jsonl` + `run.jsonl` with model-attributed decisions (`rationale` events, `TurnRecord.rationale`) and a `transcript.jsonl` whose first request starts at the authenticated entry page (`digests/turn-01.json` path `/search`); `evidence/artifact/*.json` have `provenance.discovery_run_id` equal to the run ids above and the same `approval.artifact_sha256` as `artifacts/*.json`; the distilled artifacts pass AW-1…AW-7 unmodified (pasted above); transcripts hold no unredacted sensitive values (scan pasted in P5-13).
+2. Author vetoes/accepts A12 (`ElementDescriptor.row_anchor_col_header`, P5-3) and A13 (`DenyReason.SECRET_TARGET`, P5-15) and reviews `docs/decisions.md` P5-1..P5-23, then says "start phase 6".
+3. Phase 6 session: re-read SPEC §17 phase 6 and §11 (escalation: lease, console, intervention, hand-back via `resume_point`), §8 (operator approvals / `ApprovalStore`), §5/§12 (intervention files), §19 AW-5a/5b. Entry points already in place: `ReplayOptions.escalate`/`escalate_timeout_s`/`console_port` (accepted, refused with exit 2), `GateContext.approvals` (engine passes `None`), `LeaseState`/`ApprovalToken`/`LEASE_TRANSITIONS`, `resume_point`, `ask_human` in discovery (maps to give_up today), A1 (operator Deny → `BLOCKED(APPROVAL_DENIED)`) still open.

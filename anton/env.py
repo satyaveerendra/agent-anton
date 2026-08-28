@@ -32,7 +32,7 @@ def load_dotenv(path: Path | None = None, env: dict[str, str] | None = None) -> 
             key = key[len("export "):].strip()
         if len(value) >= 2 and value[0] == value[-1] and value[0] in "\"'":
             value = value[1:-1]
-        if not key or not value or key in target and target[key] != "":
+        if not key or not value or key in target:  # a real env var wins even when it is set to ""
             continue
         target[key] = value
         loaded.append(key)

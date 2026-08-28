@@ -1,0 +1,678 @@
+{
+ "path": "/member/204817",
+ "url": "http://127.0.0.1:64778/member/204817",
+ "title": "Member Profile \u2014 Member Servicing Console",
+ "viewport": [
+  1280,
+  900
+ ],
+ "elements": [
+  {
+   "ref": "e3",
+   "role": "link",
+   "name": "Sign out",
+   "text": "Sign out"
+  },
+  {
+   "ref": "e5",
+   "role": "link",
+   "name": "Back to search",
+   "text": "Back to search"
+  },
+  {
+   "ref": "e25",
+   "role": "link",
+   "name": "Open Sub-Account",
+   "text": "Open Sub-Account",
+   "frame": "iframe[name=detail]"
+  },
+  {
+   "ref": "e1",
+   "role": "cell",
+   "name": "Member Servicing Console",
+   "text": "Member Servicing Console"
+  },
+  {
+   "ref": "e2",
+   "role": "text",
+   "name": "Signed in as ops_user",
+   "text": "Signed in as ops_user"
+  },
+  {
+   "ref": "e4",
+   "role": "text",
+   "name": "Member Profile",
+   "text": "Member Profile"
+  },
+  {
+   "ref": "e6",
+   "role": "cell",
+   "name": "Profile",
+   "text": "Profile",
+   "frame": "iframe[name=detail]"
+  },
+  {
+   "ref": "e7",
+   "role": "cell",
+   "name": "Name",
+   "text": "Name",
+   "frame": "iframe[name=detail]"
+  },
+  {
+   "ref": "e8",
+   "role": "cell",
+   "name": "Alpha Sample",
+   "text": "Alpha Sample",
+   "frame": "iframe[name=detail]"
+  },
+  {
+   "ref": "e9",
+   "role": "cell",
+   "name": "Member ID",
+   "text": "Member ID",
+   "frame": "iframe[name=detail]"
+  },
+  {
+   "ref": "e10",
+   "role": "cell",
+   "name": "204817",
+   "text": "204817",
+   "frame": "iframe[name=detail]"
+  },
+  {
+   "ref": "e11",
+   "role": "cell",
+   "name": "Date of Birth",
+   "text": "Date of Birth",
+   "frame": "iframe[name=detail]"
+  },
+  {
+   "ref": "e12",
+   "role": "cell",
+   "name": "***",
+   "text": "***",
+   "frame": "iframe[name=detail]"
+  },
+  {
+   "ref": "e13",
+   "role": "cell",
+   "name": "SSN",
+   "text": "SSN",
+   "frame": "iframe[name=detail]"
+  },
+  {
+   "ref": "e14",
+   "role": "cell",
+   "name": "***",
+   "text": "***",
+   "frame": "iframe[name=detail]"
+  },
+  {
+   "ref": "e15",
+   "role": "cell",
+   "name": "Accounts",
+   "text": "Accounts",
+   "frame": "iframe[name=detail]"
+  },
+  {
+   "ref": "e16",
+   "role": "cell",
+   "name": "Type",
+   "text": "Type",
+   "frame": "iframe[name=detail]"
+  },
+  {
+   "ref": "e17",
+   "role": "cell",
+   "name": "Account No.",
+   "text": "Account No.",
+   "frame": "iframe[name=detail]"
+  },
+  {
+   "ref": "e18",
+   "role": "cell",
+   "name": "Balance",
+   "text": "Balance",
+   "frame": "iframe[name=detail]"
+  },
+  {
+   "ref": "e19",
+   "role": "cell",
+   "name": "Checking",
+   "text": "Checking",
+   "frame": "iframe[name=detail]"
+  },
+  {
+   "ref": "e20",
+   "role": "cell",
+   "name": "***",
+   "text": "***",
+   "frame": "iframe[name=detail]"
+  },
+  {
+   "ref": "e21",
+   "role": "cell",
+   "name": "$5,577.90",
+   "text": "$5,577.90",
+   "frame": "iframe[name=detail]"
+  },
+  {
+   "ref": "e22",
+   "role": "cell",
+   "name": "Savings",
+   "text": "Savings",
+   "frame": "iframe[name=detail]"
+  },
+  {
+   "ref": "e23",
+   "role": "cell",
+   "name": "***",
+   "text": "***",
+   "frame": "iframe[name=detail]"
+  },
+  {
+   "ref": "e24",
+   "role": "cell",
+   "name": "$19,823.28",
+   "text": "$19,823.28",
+   "frame": "iframe[name=detail]"
+  }
+ ],
+ "snapshot": {
+  "url": "http://127.0.0.1:64778/member/204817",
+  "title": "Member Profile \u2014 Member Servicing Console",
+  "frame_count": 2,
+  "elements": [
+   {
+    "ref": "e1",
+    "role": "cell",
+    "name": "Member Servicing Console",
+    "text": "Member Servicing Console",
+    "control_type": "td",
+    "frame_path": [],
+    "bbox": {
+     "x": 0.0,
+     "y": 0.0,
+     "w": 616.234375,
+     "h": 31.0
+    },
+    "enabled": true,
+    "visible": true,
+    "value": null,
+    "checked": null
+   },
+   {
+    "ref": "e2",
+    "role": "text",
+    "name": "Signed in as ops_user",
+    "text": "Signed in as ops_user",
+    "control_type": "span",
+    "frame_path": [],
+    "bbox": {
+     "x": 1017.546875,
+     "y": 6.0,
+     "w": 177.265625,
+     "h": 19.0
+    },
+    "enabled": true,
+    "visible": true,
+    "value": null,
+    "checked": null
+   },
+   {
+    "ref": "e3",
+    "role": "link",
+    "name": "Sign out",
+    "text": "Sign out",
+    "control_type": "a",
+    "frame_path": [],
+    "bbox": {
+     "x": 1206.8125,
+     "y": 6.0,
+     "w": 67.1875,
+     "h": 19.0
+    },
+    "enabled": true,
+    "visible": true,
+    "value": null,
+    "checked": null
+   },
+   {
+    "ref": "e4",
+    "role": "text",
+    "name": "Member Profile",
+    "text": "Member Profile",
+    "control_type": "span",
+    "frame_path": [],
+    "bbox": {
+     "x": 16.0,
+     "y": 47.0,
+     "w": 136.9375,
+     "h": 19.0
+    },
+    "enabled": true,
+    "visible": true,
+    "value": null,
+    "checked": null
+   },
+   {
+    "ref": "e5",
+    "role": "link",
+    "name": "Back to search",
+    "text": "Back to search",
+    "control_type": "a",
+    "frame_path": [],
+    "bbox": {
+     "x": 162.9375,
+     "y": 47.0,
+     "w": 118.421875,
+     "h": 19.0
+    },
+    "enabled": true,
+    "visible": true,
+    "value": null,
+    "checked": null
+   },
+   {
+    "ref": "e6",
+    "role": "cell",
+    "name": "Profile",
+    "text": "Profile",
+    "control_type": "td",
+    "frame_path": [
+     "iframe[name=detail]"
+    ],
+    "bbox": {
+     "x": 15.0,
+     "y": 77.0,
+     "w": 66.984375,
+     "h": 27.0
+    },
+    "enabled": true,
+    "visible": true,
+    "value": null,
+    "checked": null
+   },
+   {
+    "ref": "e7",
+    "role": "cell",
+    "name": "Name",
+    "text": "Name",
+    "control_type": "td",
+    "frame_path": [
+     "iframe[name=detail]"
+    ],
+    "bbox": {
+     "x": 13.5,
+     "y": 106.5,
+     "w": 111.984375,
+     "h": 28.0
+    },
+    "enabled": true,
+    "visible": true,
+    "value": null,
+    "checked": null
+   },
+   {
+    "ref": "e8",
+    "role": "cell",
+    "name": "Alpha Sample",
+    "text": "Alpha Sample",
+    "control_type": "td",
+    "frame_path": [
+     "iframe[name=detail]"
+    ],
+    "bbox": {
+     "x": 125.484375,
+     "y": 106.5,
+     "w": 119.65625,
+     "h": 28.0
+    },
+    "enabled": true,
+    "visible": true,
+    "value": null,
+    "checked": null
+   },
+   {
+    "ref": "e9",
+    "role": "cell",
+    "name": "Member ID",
+    "text": "Member ID",
+    "control_type": "td",
+    "frame_path": [
+     "iframe[name=detail]"
+    ],
+    "bbox": {
+     "x": 13.5,
+     "y": 134.5,
+     "w": 111.984375,
+     "h": 28.0
+    },
+    "enabled": true,
+    "visible": true,
+    "value": null,
+    "checked": null
+   },
+   {
+    "ref": "e10",
+    "role": "cell",
+    "name": "204817",
+    "text": "204817",
+    "control_type": "td",
+    "frame_path": [
+     "iframe[name=detail]"
+    ],
+    "bbox": {
+     "x": 125.484375,
+     "y": 134.5,
+     "w": 119.65625,
+     "h": 28.0
+    },
+    "enabled": true,
+    "visible": true,
+    "value": null,
+    "checked": null
+   },
+   {
+    "ref": "e11",
+    "role": "cell",
+    "name": "Date of Birth",
+    "text": "Date of Birth",
+    "control_type": "td",
+    "frame_path": [
+     "iframe[name=detail]"
+    ],
+    "bbox": {
+     "x": 13.5,
+     "y": 162.5,
+     "w": 111.984375,
+     "h": 28.0
+    },
+    "enabled": true,
+    "visible": true,
+    "value": null,
+    "checked": null
+   },
+   {
+    "ref": "e12",
+    "role": "cell",
+    "name": "***",
+    "text": "***",
+    "control_type": "td",
+    "frame_path": [
+     "iframe[name=detail]"
+    ],
+    "bbox": {
+     "x": 125.484375,
+     "y": 162.5,
+     "w": 119.65625,
+     "h": 28.0
+    },
+    "enabled": true,
+    "visible": true,
+    "value": null,
+    "checked": null
+   },
+   {
+    "ref": "e13",
+    "role": "cell",
+    "name": "SSN",
+    "text": "SSN",
+    "control_type": "td",
+    "frame_path": [
+     "iframe[name=detail]"
+    ],
+    "bbox": {
+     "x": 13.5,
+     "y": 190.5,
+     "w": 111.984375,
+     "h": 28.0
+    },
+    "enabled": true,
+    "visible": true,
+    "value": null,
+    "checked": null
+   },
+   {
+    "ref": "e14",
+    "role": "cell",
+    "name": "***",
+    "text": "***",
+    "control_type": "td",
+    "frame_path": [
+     "iframe[name=detail]"
+    ],
+    "bbox": {
+     "x": 125.484375,
+     "y": 190.5,
+     "w": 119.65625,
+     "h": 28.0
+    },
+    "enabled": true,
+    "visible": true,
+    "value": null,
+    "checked": null
+   },
+   {
+    "ref": "e15",
+    "role": "cell",
+    "name": "Accounts",
+    "text": "Accounts",
+    "control_type": "td",
+    "frame_path": [
+     "iframe[name=detail]"
+    ],
+    "bbox": {
+     "x": 15.0,
+     "y": 231.0,
+     "w": 89.8125,
+     "h": 27.0
+    },
+    "enabled": true,
+    "visible": true,
+    "value": null,
+    "checked": null
+   },
+   {
+    "ref": "e16",
+    "role": "cell",
+    "name": "Type",
+    "text": "Type",
+    "control_type": "td",
+    "frame_path": [
+     "iframe[name=detail]"
+    ],
+    "bbox": {
+     "x": 13.5,
+     "y": 260.5,
+     "w": 82.125,
+     "h": 28.0
+    },
+    "enabled": true,
+    "visible": true,
+    "value": null,
+    "checked": null
+   },
+   {
+    "ref": "e17",
+    "role": "cell",
+    "name": "Account No.",
+    "text": "Account No.",
+    "control_type": "td",
+    "frame_path": [
+     "iframe[name=detail]"
+    ],
+    "bbox": {
+     "x": 95.625,
+     "y": 260.5,
+     "w": 117.109375,
+     "h": 28.0
+    },
+    "enabled": true,
+    "visible": true,
+    "value": null,
+    "checked": null
+   },
+   {
+    "ref": "e18",
+    "role": "cell",
+    "name": "Balance",
+    "text": "Balance",
+    "control_type": "td",
+    "frame_path": [
+     "iframe[name=detail]"
+    ],
+    "bbox": {
+     "x": 212.734375,
+     "y": 260.5,
+     "w": 102.015625,
+     "h": 28.0
+    },
+    "enabled": true,
+    "visible": true,
+    "value": null,
+    "checked": null
+   },
+   {
+    "ref": "e19",
+    "role": "cell",
+    "name": "Checking",
+    "text": "Checking",
+    "control_type": "td",
+    "frame_path": [
+     "iframe[name=detail]"
+    ],
+    "bbox": {
+     "x": 13.5,
+     "y": 288.5,
+     "w": 82.125,
+     "h": 28.0
+    },
+    "enabled": true,
+    "visible": true,
+    "value": null,
+    "checked": null
+   },
+   {
+    "ref": "e20",
+    "role": "cell",
+    "name": "***",
+    "text": "***",
+    "control_type": "td",
+    "frame_path": [
+     "iframe[name=detail]"
+    ],
+    "bbox": {
+     "x": 95.625,
+     "y": 288.5,
+     "w": 117.109375,
+     "h": 28.0
+    },
+    "enabled": true,
+    "visible": true,
+    "value": null,
+    "checked": null
+   },
+   {
+    "ref": "e21",
+    "role": "cell",
+    "name": "$5,577.90",
+    "text": "$5,577.90",
+    "control_type": "td",
+    "frame_path": [
+     "iframe[name=detail]"
+    ],
+    "bbox": {
+     "x": 212.734375,
+     "y": 288.5,
+     "w": 102.015625,
+     "h": 28.0
+    },
+    "enabled": true,
+    "visible": true,
+    "value": null,
+    "checked": null
+   },
+   {
+    "ref": "e22",
+    "role": "cell",
+    "name": "Savings",
+    "text": "Savings",
+    "control_type": "td",
+    "frame_path": [
+     "iframe[name=detail]"
+    ],
+    "bbox": {
+     "x": 13.5,
+     "y": 316.5,
+     "w": 82.125,
+     "h": 28.0
+    },
+    "enabled": true,
+    "visible": true,
+    "value": null,
+    "checked": null
+   },
+   {
+    "ref": "e23",
+    "role": "cell",
+    "name": "***",
+    "text": "***",
+    "control_type": "td",
+    "frame_path": [
+     "iframe[name=detail]"
+    ],
+    "bbox": {
+     "x": 95.625,
+     "y": 316.5,
+     "w": 117.109375,
+     "h": 28.0
+    },
+    "enabled": true,
+    "visible": true,
+    "value": null,
+    "checked": null
+   },
+   {
+    "ref": "e24",
+    "role": "cell",
+    "name": "$19,823.28",
+    "text": "$19,823.28",
+    "control_type": "td",
+    "frame_path": [
+     "iframe[name=detail]"
+    ],
+    "bbox": {
+     "x": 212.734375,
+     "y": 316.5,
+     "w": 102.015625,
+     "h": 28.0
+    },
+    "enabled": true,
+    "visible": true,
+    "value": null,
+    "checked": null
+   },
+   {
+    "ref": "e25",
+    "role": "link",
+    "name": "Open Sub-Account",
+    "text": "Open Sub-Account",
+    "control_type": "a",
+    "frame_path": [
+     "iframe[name=detail]"
+    ],
+    "bbox": {
+     "x": 19.0,
+     "y": 361.0,
+     "w": 149.625,
+     "h": 19.0
+    },
+    "enabled": true,
+    "visible": true,
+    "value": null,
+    "checked": null
+   }
+  ]
+ }
+}

@@ -6,9 +6,9 @@
   "version": "1.0.0",
   "status": "approved",
   "approval": {
-    "approved_at": "2026-08-28T16:04:33.123979Z",
+    "approved_at": "2026-08-28T19:28:13.242704Z",
     "approved_by": "satya",
-    "artifact_sha256": "e4b668a703ba75bd9f29f6a8cd86aca3813b62482ab4d7ea28e2e5b6640c306e"
+    "artifact_sha256": "767b3a2d0254f18acbfd1bcdca63546ab8339df6f6bb82f984f3245db93aec8f"
   },
   "app_profile": "profiles/servicing.yaml",
   "requires_flows": [
@@ -67,7 +67,7 @@
           "candidates": [
             {
               "tier": 2,
-              "rationale": "the cell at (row whose Type is 'Savings') x (column headed 'Balance'); survives the tenant column shift",
+              "rationale": "the cell at (row anchored by 'Savings' in column 'Type') × (column headed 'Balance'); survives column reordering",
               "frame_path": [
                 "iframe[name=detail]"
               ],
@@ -77,6 +77,18 @@
               "anchor_col_header": "Type",
               "col_header": "Balance",
               "target_role": null
+            },
+            {
+              "tier": 3,
+              "rationale": "normalized box observed during discovery; last resort, sets drift_flag",
+              "frame_path": [
+                "iframe[name=detail]"
+              ],
+              "kind": "bbox",
+              "x": 0.1662,
+              "y": 0.3517,
+              "w": 0.0797,
+              "h": 0.0311
             }
           ],
           "fingerprint": {
@@ -100,13 +112,13 @@
   "steps": [
     {
       "id": "fill_member_id",
-      "description": "Type the member id into the search form",
+      "description": "Enter member ID to search",
       "action": "FILL",
       "target": {
         "candidates": [
           {
             "tier": 1,
-            "rationale": "computed role 'textbox' + accessible name 'Member ID' (from its label cell / button text) is the stable semantic identity",
+            "rationale": "computed role 'textbox' + accessible name 'Member ID' observed during discovery; the semantic identity of the control",
             "frame_path": [],
             "kind": "role_name",
             "role": "textbox",
@@ -115,7 +127,7 @@
           },
           {
             "tier": 2,
-            "rationale": "the control sits in the cell right of its 'Member ID' label; survives an attribute/name change",
+            "rationale": "the element sits right of its label 'Member ID'; survives a name/attribute change",
             "frame_path": [],
             "kind": "label_relative",
             "relation": "right_of_label",
@@ -126,7 +138,7 @@
           },
           {
             "tier": 3,
-            "rationale": "measured on the recorded app at 1280x900; last resort",
+            "rationale": "normalized box observed during discovery; last resort, sets drift_flag",
             "frame_path": [],
             "kind": "bbox",
             "x": 0.0903,
@@ -156,7 +168,7 @@
               "candidates": [
                 {
                   "tier": 1,
-                  "rationale": "computed role 'textbox' + accessible name 'Member ID' (from its label cell / button text) is the stable semantic identity",
+                  "rationale": "computed role 'textbox' + accessible name 'Member ID' observed during discovery; the semantic identity of the control",
                   "frame_path": [],
                   "kind": "role_name",
                   "role": "textbox",
@@ -165,7 +177,7 @@
                 },
                 {
                   "tier": 2,
-                  "rationale": "the control sits in the cell right of its 'Member ID' label; survives an attribute/name change",
+                  "rationale": "the element sits right of its label 'Member ID'; survives a name/attribute change",
                   "frame_path": [],
                   "kind": "label_relative",
                   "relation": "right_of_label",
@@ -176,7 +188,7 @@
                 },
                 {
                   "tier": 3,
-                  "rationale": "measured on the recorded app at 1280x900; last resort",
+                  "rationale": "normalized box observed during discovery; last resort, sets drift_flag",
                   "frame_path": [],
                   "kind": "bbox",
                   "x": 0.0903,
@@ -205,13 +217,13 @@
     },
     {
       "id": "click_search",
-      "description": "Submit the search; the app opens the member profile",
+      "description": "Submit search for member $param:member_id",
       "action": "CLICK",
       "target": {
         "candidates": [
           {
             "tier": 1,
-            "rationale": "computed role 'button' + accessible name 'Search' (from its label cell / button text) is the stable semantic identity",
+            "rationale": "computed role 'button' + accessible name 'Search' observed during discovery; the semantic identity of the control",
             "frame_path": [],
             "kind": "role_name",
             "role": "button",
@@ -219,15 +231,8 @@
             "exact": false
           },
           {
-            "tier": 2,
-            "rationale": "the visible text 'Search' is the label users see",
-            "frame_path": [],
-            "kind": "exact_text",
-            "text": "Search"
-          },
-          {
             "tier": 3,
-            "rationale": "measured on the recorded app at 1280x900; last resort",
+            "rationale": "normalized box observed during discovery; last resort, sets drift_flag",
             "frame_path": [],
             "kind": "bbox",
             "x": 0.0903,
@@ -270,12 +275,16 @@
         "regex": "^/member/[^/]+$"
       },
       {
+        "kind": "text_visible",
+        "regex": "Member Profile"
+      },
+      {
         "kind": "element_visible",
         "ladder": {
           "candidates": [
             {
               "tier": 2,
-              "rationale": "the cell at (row whose Type is 'Savings') x (column headed 'Balance'); survives the tenant column shift",
+              "rationale": "the cell at (row anchored by 'Savings' in column 'Type') × (column headed 'Balance'); survives column reordering",
               "frame_path": [
                 "iframe[name=detail]"
               ],
@@ -285,6 +294,18 @@
               "anchor_col_header": "Type",
               "col_header": "Balance",
               "target_role": null
+            },
+            {
+              "tier": 3,
+              "rationale": "normalized box observed during discovery; last resort, sets drift_flag",
+              "frame_path": [
+                "iframe[name=detail]"
+              ],
+              "kind": "bbox",
+              "x": 0.1662,
+              "y": 0.3517,
+              "w": 0.0797,
+              "h": 0.0311
             }
           ],
           "fingerprint": {
@@ -298,16 +319,16 @@
     ]
   },
   "provenance": {
-    "origin": "hand_authored",
-    "discovery_run_id": null,
-    "model": null,
-    "created_at": "2026-08-28T16:04:32.730983Z",
+    "origin": "discovery",
+    "discovery_run_id": "20260828T192716Z-14d564",
+    "model": "claude-sonnet-5",
+    "created_at": "2026-08-28T19:27:16Z",
     "surface": "web",
     "recorded_against": {
       "app_id": "servicing",
       "tenant_id": "alpha",
       "app_version": "1",
-      "entry_url": "http://localhost:8000/search"
+      "entry_url": "http://127.0.0.1:64778/search"
     }
   }
 }

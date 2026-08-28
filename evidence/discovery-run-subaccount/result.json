@@ -1,0 +1,13 @@
+{
+  "run_id": "20260828T192729Z-07ca25",
+  "goal": "Open a new savings sub-account with a $50 initial deposit for member 204817 and reach the confirmation screen",
+  "status": "SUCCESS",
+  "failure_kind": null,
+  "blocked": null,
+  "artifact_path": "artifacts/open_subaccount.json",
+  "turns": 10,
+  "reason": null,
+  "interventions": [],
+  "started_at": "2026-08-28T19:27:29.108729Z",
+  "finished_at": "2026-08-28T19:28:12.187523Z"
+}

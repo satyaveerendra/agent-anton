@@ -1,13 +1,13 @@
 """``python -m anton <cmd>`` — a thin wrapper (SPEC §13).
 
-Phase 1 shipped ``inspect`` and ``approve``; phase 2 ``target serve``; phase 4 ``replay``.
-``discover`` is registered so the usage text is complete, and exits 2 with a clear message
-until its phase lands (SPEC §17).
+Phase 1 shipped ``inspect`` and ``approve``; phase 2 ``target serve``; phase 4 ``replay``;
+phase 5 ``discover``.
 """
 
 from __future__ import annotations
 
 import argparse
+import json
 import os
 import re
 import sys
@@ -41,9 +41,7 @@ from anton.schema.loader import (
 )
 from anton.schema.result import EXIT_USAGE, exit_code
 
-NOT_YET = {
-    "discover": "phase 5",
-}
+NOT_YET: dict[str, str] = {}
 
 
 def _candidate_summary(ladder: LocatorLadder) -> list[str]:
@@ -148,13 +146,20 @@ def _effective_risk_label(step: StepSpec, policy: PolicyConfig) -> str:
         first = step.target.candidates[0]
         if isinstance(first, RoleNameLocator):
             tier1_name = first.name
+    maybe: list[int] = []
     for i, rule in enumerate(policy.risky_rules, start=1):
         if step.action not in rule.actions:
             continue
         name_ok = rule.name_matches is None or (tier1_name is not None and re.search(rule.name_matches, tier1_name) is not None)
-        if name_ok:
-            when = "url checked at act-time" if rule.url_matches else "static match"
-            return f"RISKY by policy rule {i} ({when}; approval required)"
+        if not name_ok:
+            continue
+        if rule.url_matches is None:
+            return f"RISKY by policy rule {i} (name match; approval required)"
+        if rule.name_matches is not None:
+            return f"RISKY by policy rule {i} (name match; url checked at act-time; approval required)"
+        maybe.append(i)  # url-only rule: only knowable at act-time
+    if maybe:
+        return f"safe (declared; policy url rule{'s' if len(maybe) > 1 else ''} {', '.join(map(str, maybe))} may raise it to RISKY at act-time)"
     return "safe (declared; policy url rules resolved at act-time)"
 
 
@@ -263,6 +268,48 @@ def cmd_replay(args: argparse.Namespace) -> int:
     return exit_code(result)
 
 
+def cmd_discover(args: argparse.Namespace) -> int:
+    """``anton discover``: goal + declared interface → draft artifact (SPEC §10, §13)."""
+    from anton.discovery.agent import DiscoverOptions, run_discovery
+    from anton.policy.gate import load_policy
+    from anton.replay.engine import ParamError, validate_params
+    from anton.schema.loader import load_profile
+    from anton.schema.spec import load_spec
+
+    if args.escalate:
+        raise LoaderError("--escalate is not available until phase 6 (SPEC §17)")
+    spec = load_spec(args.spec)
+    profile = load_profile(args.profile)
+    try:
+        policy = load_policy(args.policy)
+    except (OSError, ValueError) as e:
+        raise LoaderError(f"policy: {e}") from e
+    # --param validation reuses the artifact rule set: the spec's inputs ARE the ParamSpecs.
+    try:
+        params = validate_params(list(spec.inputs), parse_params(args.param))
+    except ParamError as e:
+        print(f"anton discover: {e}", file=sys.stderr)
+        return EXIT_USAGE
+    if args.record_video and profile.sensitive_elements:
+        raise LoaderError(f"--record-video is refused for profile {profile.app_id!r}: it declares sensitive_elements and video cannot be masked (SPEC §8)")
+    profile_path = str(args.profile)
+    try:
+        profile_path = str(resolve_repo_path(args.profile).relative_to(resolve_repo_path(".")))
+    except ValueError:
+        pass
+    opts = DiscoverOptions(
+        goal=args.goal, spec=spec, params=params, profile_path=profile_path, out_dir=Path(args.out), approve_risky=args.approve_risky,
+        escalate=False, escalate_timeout_s=args.escalate_timeout, console_port=args.console_port, record_video=args.record_video,
+        headless=True if args.headless else None,
+    )
+    result = run_discovery(opts, profile, policy, args.url)
+    from anton.policy.redact import Redactor
+
+    redactor = Redactor(policy.redact_field_patterns, policy.redact_value_patterns, known_values={v for k, v in os.environ.items() if k.startswith("ANTON_SECRET_") and v})
+    sys.stdout.write(json.dumps(redactor.scrub(result.model_dump(mode="json")), indent=2) + "\n")
+    return exit_code(result)
+
+
 def cmd_not_yet(args: argparse.Namespace) -> int:
     print(f"anton {args.command}: not available until {NOT_YET[args.command]} (SPEC §17)", file=sys.stderr)
     return EXIT_USAGE
@@ -294,6 +341,22 @@ def build_parser() -> argparse.ArgumentParser:
     p_serve.add_argument("--host", default="127.0.0.1")
     p_serve.add_argument("--debug-state", action="store_true", dest="debug_state", help="expose GET /__state/member/<id> (acceptance fixture only)")
     p_serve.set_defaults(func=cmd_target)
+
+    p_disc = sub.add_parser("discover", help="discover a capability from a goal + declared interface; writes a draft artifact")
+    p_disc.add_argument("--goal", required=True, help="natural-language goal")
+    p_disc.add_argument("--profile", type=Path, required=True, help="AppProfile yaml")
+    p_disc.add_argument("--spec", type=Path, required=True, help="declared interface yaml (inputs + outputs minus extraction)")
+    p_disc.add_argument("--param", action="append", default=[], metavar="NAME=VALUE")
+    p_disc.add_argument("--url", default=None, help="entry URL override; an origin-only URL keeps the profile's path")
+    p_disc.add_argument("--out", type=Path, default=Path("artifacts"), help="directory for the distilled artifact")
+    p_disc.add_argument("--policy", type=Path, default=None)
+    p_disc.add_argument("--approve-risky", action="store_true", dest="approve_risky")
+    p_disc.add_argument("--escalate", action="store_true", help="(phase 6) human escalation")
+    p_disc.add_argument("--escalate-timeout", type=int, default=600, dest="escalate_timeout")
+    p_disc.add_argument("--console-port", type=int, default=7071, dest="console_port")
+    p_disc.add_argument("--record-video", action="store_true", dest="record_video")
+    p_disc.add_argument("--headless", action="store_true")
+    p_disc.set_defaults(func=cmd_discover)
 
     p_replay = sub.add_parser("replay", help="replay an approved capability artifact deterministically")
     p_replay.add_argument("artifact", type=Path)

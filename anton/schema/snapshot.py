@@ -70,6 +70,8 @@ class ElementDescriptor(StrictModel):
     #: When the element sat in a table with a header row.
     row_anchor: str | None = None
     col_header: str | None = None
+    #: Header of the anchor's column (decisions P5-3): what ``row_cell.anchor_col_header`` needs.
+    row_anchor_col_header: str | None = None
 
 
 class TurnRecord(StrictModel):

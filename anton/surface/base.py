@@ -87,6 +87,10 @@ class Surface(Protocol):
         """ONE candidate, against the last observed snapshot."""
         ...
 
+    def viewport(self) -> tuple[int, int]:
+        """Top-page viewport (w, h) the last snapshot's boxes are expressed in (tier-3 boxes)."""
+        ...
+
     def resolve_ref(self, ref: str) -> ResolvedElement | None:
         """A turn-scoped ref (``e12``) from the last observed snapshot → live element (discovery)."""
         ...

@@ -1,0 +1,16 @@
+{
+  "run_id": "20260828T192716Z-14d564",
+  "goal": "Look up member 204817 and read the current savings balance",
+  "capability_id": "servicing.read_savings_balance",
+  "params": {
+    "member_id": "204817"
+  },
+  "entry_url": "http://127.0.0.1:64778/search",
+  "route_prefix": "",
+  "model": "claude-sonnet-5",
+  "read_values": [
+    "$19,823.28"
+  ],
+  "human_takeover": false,
+  "profile_path": "profiles/servicing.yaml"
+}

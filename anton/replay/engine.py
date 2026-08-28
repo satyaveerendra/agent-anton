@@ -46,6 +46,7 @@ from anton.schema.artifact import (
     OutputSpec,
     OutputType,
     ParamRef,
+    ParamSpec,
     ParamType,
     RecoverableDetector,
     RetryStep,
@@ -103,9 +104,11 @@ class ParamError(Exception):
 _BOOL = {"true", "false", "1", "0", "yes", "no"}
 
 
-def validate_params(artifact: CapabilityArtifact, given: Mapping[str, str]) -> dict[str, str]:
-    """Check the caller's strings against ``ParamSpec`` (required, pattern, enum, type)."""
-    specs = {p.name: p for p in artifact.inputs}
+def validate_params(artifact: CapabilityArtifact | list[ParamSpec], given: Mapping[str, str]) -> dict[str, str]:
+    """Check the caller's strings against ``ParamSpec`` (required, pattern, enum, type). A bare list of
+    ``ParamSpec``s (the ``discover --spec`` inputs) skips the artifact-reference check."""
+    inputs = artifact if isinstance(artifact, list) else artifact.inputs
+    specs = {p.name: p for p in inputs}
     unknown = sorted(set(given) - set(specs))
     if unknown:
         raise ParamError(f"unknown param(s) {unknown}; declared inputs: {sorted(specs)}")
@@ -131,6 +134,8 @@ def validate_params(artifact: CapabilityArtifact, given: Mapping[str, str]) -> d
         if spec.type is ParamType.ENUM and v not in (spec.enum_values or []):
             raise ParamError(f"param {name}={shown} is not one of {spec.enum_values}")
         out[name] = v
+    if isinstance(artifact, list):
+        return out
     referenced = referenced_param_names(artifact.model_dump(mode="json", exclude={"inputs"}))
     unsupplied = sorted(referenced - set(out))
     if unsupplied:
@@ -777,7 +782,8 @@ def run_replay(bundle: LoadedBundle, params: Mapping[str, str], opts: ReplayOpti
     run_dir = opts.run_dir if opts.run_dir is not None else (opts.runs_root or repo_root() / "runs") / run_id
     artifact, policy = bundle.artifact, bundle.policy
     sensitive_params = [params[p.name] for p in artifact.inputs if p.sensitive and p.name in params]
-    redactor = Redactor(policy.redact_field_patterns, policy.redact_value_patterns, known_values=set(sensitive_params))
+    env_secrets = {v for k, v in os.environ.items() if k.startswith("ANTON_SECRET_") and v}
+    redactor = Redactor(policy.redact_field_patterns, policy.redact_value_patterns, known_values=set(sensitive_params) | env_secrets)
     log = RunLog(run_dir, redactor)
     gate = ActionGate(policy)
     steps: list[StepResult] = []
@@ -798,6 +804,7 @@ def run_replay(bundle: LoadedBundle, params: Mapping[str, str], opts: ReplayOpti
             page = context.new_page()
             surface = PlaywrightSurface(page, redactor, bundle.profile.sensitive_elements, bundle.route_prefix, screenshot_dir=run_dir / "screenshots", on_event=log.event)
             engine = ReplayEngine(bundle, params, opts, surface, gate, log, redactor, steps)
+            engine._secret_values |= env_secrets
             try:
                 outputs = engine.execute()
             except _Terminal as t:

@@ -1,0 +1,19 @@
+{
+  "run_id": "20260828T192729Z-07ca25",
+  "goal": "Open a new savings sub-account with a $50 initial deposit for member 204817 and reach the confirmation screen",
+  "capability_id": "servicing.open_subaccount",
+  "params": {
+    "member_id": "204817",
+    "initial_deposit": "50",
+    "nickname": "Holiday fund"
+  },
+  "entry_url": "http://127.0.0.1:64800/search",
+  "route_prefix": "",
+  "model": "claude-sonnet-5",
+  "read_values": [
+    "***",
+    "***"
+  ],
+  "human_takeover": false,
+  "profile_path": "profiles/servicing.yaml"
+}

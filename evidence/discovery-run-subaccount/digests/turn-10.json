@@ -1,0 +1,378 @@
+{
+ "path": "/member/204817/subaccount/confirmation",
+ "url": "http://127.0.0.1:64800/member/204817/subaccount/confirmation",
+ "title": "Sub-account opened \u2014 Member Servicing Console",
+ "viewport": [
+  1280,
+  900
+ ],
+ "elements": [
+  {
+   "ref": "e3",
+   "role": "link",
+   "name": "Sign out",
+   "text": "Sign out"
+  },
+  {
+   "ref": "e15",
+   "role": "link",
+   "name": "Back to member",
+   "text": "Back to member"
+  },
+  {
+   "ref": "e1",
+   "role": "cell",
+   "name": "Member Servicing Console",
+   "text": "Member Servicing Console"
+  },
+  {
+   "ref": "e2",
+   "role": "text",
+   "name": "Signed in as ops_user",
+   "text": "Signed in as ops_user"
+  },
+  {
+   "ref": "e4",
+   "role": "text",
+   "name": "Sub-account opened",
+   "text": "Sub-account opened"
+  },
+  {
+   "ref": "e5",
+   "role": "cell",
+   "name": "Member",
+   "text": "Member"
+  },
+  {
+   "ref": "e6",
+   "role": "cell",
+   "name": "204817",
+   "text": "204817"
+  },
+  {
+   "ref": "e7",
+   "role": "cell",
+   "name": "Account Number",
+   "text": "Account Number"
+  },
+  {
+   "ref": "e8",
+   "role": "cell",
+   "name": "***",
+   "text": "***"
+  },
+  {
+   "ref": "e9",
+   "role": "cell",
+   "name": "Type",
+   "text": "Type"
+  },
+  {
+   "ref": "e10",
+   "role": "cell",
+   "name": "Savings (sub)",
+   "text": "Savings (sub)"
+  },
+  {
+   "ref": "e11",
+   "role": "cell",
+   "name": "Nickname",
+   "text": "Nickname"
+  },
+  {
+   "ref": "e12",
+   "role": "cell",
+   "name": "Holiday fund",
+   "text": "Holiday fund"
+  },
+  {
+   "ref": "e13",
+   "role": "cell",
+   "name": "Opening balance",
+   "text": "Opening balance"
+  },
+  {
+   "ref": "e14",
+   "role": "cell",
+   "name": "$50.00",
+   "text": "$50.00"
+  }
+ ],
+ "snapshot": {
+  "url": "http://127.0.0.1:64800/member/204817/subaccount/confirmation",
+  "title": "Sub-account opened \u2014 Member Servicing Console",
+  "frame_count": 1,
+  "elements": [
+   {
+    "ref": "e1",
+    "role": "cell",
+    "name": "Member Servicing Console",
+    "text": "Member Servicing Console",
+    "control_type": "td",
+    "frame_path": [],
+    "bbox": {
+     "x": 0.0,
+     "y": 0.0,
+     "w": 616.234375,
+     "h": 31.0
+    },
+    "enabled": true,
+    "visible": true,
+    "value": null,
+    "checked": null
+   },
+   {
+    "ref": "e2",
+    "role": "text",
+    "name": "Signed in as ops_user",
+    "text": "Signed in as ops_user",
+    "control_type": "span",
+    "frame_path": [],
+    "bbox": {
+     "x": 1017.546875,
+     "y": 6.0,
+     "w": 177.265625,
+     "h": 19.0
+    },
+    "enabled": true,
+    "visible": true,
+    "value": null,
+    "checked": null
+   },
+   {
+    "ref": "e3",
+    "role": "link",
+    "name": "Sign out",
+    "text": "Sign out",
+    "control_type": "a",
+    "frame_path": [],
+    "bbox": {
+     "x": 1206.8125,
+     "y": 6.0,
+     "w": 67.1875,
+     "h": 19.0
+    },
+    "enabled": true,
+    "visible": true,
+    "value": null,
+    "checked": null
+   },
+   {
+    "ref": "e4",
+    "role": "text",
+    "name": "Sub-account opened",
+    "text": "Sub-account opened",
+    "control_type": "span",
+    "frame_path": [],
+    "bbox": {
+     "x": 16.0,
+     "y": 47.0,
+     "w": 183.703125,
+     "h": 19.0
+    },
+    "enabled": true,
+    "visible": true,
+    "value": null,
+    "checked": null
+   },
+   {
+    "ref": "e5",
+    "role": "cell",
+    "name": "Member",
+    "text": "Member",
+    "control_type": "td",
+    "frame_path": [],
+    "bbox": {
+     "x": 10.5,
+     "y": 72.5,
+     "w": 142.90625,
+     "h": 28.0
+    },
+    "enabled": true,
+    "visible": true,
+    "value": null,
+    "checked": null
+   },
+   {
+    "ref": "e6",
+    "role": "cell",
+    "name": "204817",
+    "text": "204817",
+    "control_type": "td",
+    "frame_path": [],
+    "bbox": {
+     "x": 153.40625,
+     "y": 72.5,
+     "w": 120.296875,
+     "h": 28.0
+    },
+    "enabled": true,
+    "visible": true,
+    "value": null,
+    "checked": null
+   },
+   {
+    "ref": "e7",
+    "role": "cell",
+    "name": "Account Number",
+    "text": "Account Number",
+    "control_type": "td",
+    "frame_path": [],
+    "bbox": {
+     "x": 10.5,
+     "y": 100.5,
+     "w": 142.90625,
+     "h": 28.0
+    },
+    "enabled": true,
+    "visible": true,
+    "value": null,
+    "checked": null
+   },
+   {
+    "ref": "e8",
+    "role": "cell",
+    "name": "***",
+    "text": "***",
+    "control_type": "td",
+    "frame_path": [],
+    "bbox": {
+     "x": 153.40625,
+     "y": 100.5,
+     "w": 120.296875,
+     "h": 28.0
+    },
+    "enabled": true,
+    "visible": true,
+    "value": null,
+    "checked": null
+   },
+   {
+    "ref": "e9",
+    "role": "cell",
+    "name": "Type",
+    "text": "Type",
+    "control_type": "td",
+    "frame_path": [],
+    "bbox": {
+     "x": 10.5,
+     "y": 128.5,
+     "w": 142.90625,
+     "h": 28.0
+    },
+    "enabled": true,
+    "visible": true,
+    "value": null,
+    "checked": null
+   },
+   {
+    "ref": "e10",
+    "role": "cell",
+    "name": "Savings (sub)",
+    "text": "Savings (sub)",
+    "control_type": "td",
+    "frame_path": [],
+    "bbox": {
+     "x": 153.40625,
+     "y": 128.5,
+     "w": 120.296875,
+     "h": 28.0
+    },
+    "enabled": true,
+    "visible": true,
+    "value": null,
+    "checked": null
+   },
+   {
+    "ref": "e11",
+    "role": "cell",
+    "name": "Nickname",
+    "text": "Nickname",
+    "control_type": "td",
+    "frame_path": [],
+    "bbox": {
+     "x": 10.5,
+     "y": 156.5,
+     "w": 142.90625,
+     "h": 28.0
+    },
+    "enabled": true,
+    "visible": true,
+    "value": null,
+    "checked": null
+   },
+   {
+    "ref": "e12",
+    "role": "cell",
+    "name": "Holiday fund",
+    "text": "Holiday fund",
+    "control_type": "td",
+    "frame_path": [],
+    "bbox": {
+     "x": 153.40625,
+     "y": 156.5,
+     "w": 120.296875,
+     "h": 28.0
+    },
+    "enabled": true,
+    "visible": true,
+    "value": null,
+    "checked": null
+   },
+   {
+    "ref": "e13",
+    "role": "cell",
+    "name": "Opening balance",
+    "text": "Opening balance",
+    "control_type": "td",
+    "frame_path": [],
+    "bbox": {
+     "x": 10.5,
+     "y": 184.5,
+     "w": 142.90625,
+     "h": 28.0
+    },
+    "enabled": true,
+    "visible": true,
+    "value": null,
+    "checked": null
+   },
+   {
+    "ref": "e14",
+    "role": "cell",
+    "name": "$50.00",
+    "text": "$50.00",
+    "control_type": "td",
+    "frame_path": [],
+    "bbox": {
+     "x": 153.40625,
+     "y": 184.5,
+     "w": 120.296875,
+     "h": 28.0
+    },
+    "enabled": true,
+    "visible": true,
+    "value": null,
+    "checked": null
+   },
+   {
+    "ref": "e15",
+    "role": "link",
+    "name": "Back to member",
+    "text": "Back to member",
+    "control_type": "a",
+    "frame_path": [],
+    "bbox": {
+     "x": 16.0,
+     "y": 219.0,
+     "w": 132.640625,
+     "h": 19.0
+    },
+    "enabled": true,
+    "visible": true,
+    "value": null,
+    "checked": null
+   }
+  ]
+ }
+}

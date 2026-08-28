@@ -239,6 +239,8 @@ class DenyReason(StrEnum):
     POST_NAV_OFFLIST = "POST_NAV_OFFLIST"
     DRAFT_NOT_ALLOWED = "DRAFT_NOT_ALLOWED"
     DRAFT_RISKY = "DRAFT_RISKY"
+    #: A SecretRef typed into a field that is not a credential field (decisions A13 / P5-15).
+    SECRET_TARGET = "SECRET_TARGET"
     #: NOT a policy violation: the "who is in control" guard.
     LEASE_NOT_HELD = "LEASE_NOT_HELD"
 
@@ -328,6 +330,11 @@ class ActionGate:
             (re.compile(r.url_matches) if r.url_matches else None, re.compile(r.name_matches) if r.name_matches else None, r)
             for r in policy.risky_rules
         ]
+        self._credential_rx = [re.compile(p) for p in policy.redact_field_patterns]
+
+    def is_credential_target(self, name: str) -> bool:
+        """A target whose accessible name matches a ``redact_field_patterns`` entry ("Password", …)."""
+        return any(rx.search(name or "") for rx in self._credential_rx)
 
     # --- allowlist ---------------------------------------------------------------------------
 
@@ -405,6 +412,11 @@ class ActionGate:
             and action.value in ctx.secret_values
         ):
             return Deny(DenyReason.SECRET_LITERAL, "a literal value equals a resolved secret; use a SecretRef")
+        if action.action in (ActionType.FILL, ActionType.SELECT, ActionType.PRESS) and action.value_kind == "secret":
+            # A secret only ever goes into a credential-like field: never a search box, a query string, a note.
+            if action.target is None or not self.is_credential_target(action.target.name):
+                shown = action.target.name if action.target is not None else "(no target)"
+                return Deny(DenyReason.SECRET_TARGET, f"a SecretRef may only be typed into a credential field; target {shown!r} does not match redact_field_patterns")
         risk, rule = self.effective_risk(action, ctx.step_risk, ctx.current_url, ctx.route_prefix)
         if risk is RiskClass.SAFE:
             return Allow(RiskClass.SAFE)

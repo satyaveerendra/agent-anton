@@ -162,6 +162,10 @@ class PlaywrightSurface:
             role=live.role, name=live.name, handle=handle, text=el.text,
         )
 
+    def viewport(self) -> tuple[int, int]:
+        _, raw = self._ensure()
+        return raw.viewport if raw.viewport != (0, 0) else (1280, 900)
+
     def resolve_ref(self, ref: str) -> ResolvedElement | None:
         """A turn-scoped ref from the LAST observed snapshot → live element (discovery tools)."""
         snapshot, raw = self._ensure()

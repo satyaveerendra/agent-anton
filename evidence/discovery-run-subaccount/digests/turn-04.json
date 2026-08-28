@@ -1,0 +1,377 @@
+{
+ "path": "/member/204817/subaccount/new",
+ "url": "http://127.0.0.1:64800/member/204817/subaccount/new",
+ "title": "New sub-account \u2014 Member Servicing Console",
+ "viewport": [
+  1280,
+  900
+ ],
+ "elements": [
+  {
+   "ref": "e3",
+   "role": "link",
+   "name": "Sign out",
+   "text": "Sign out"
+  },
+  {
+   "ref": "e7",
+   "role": "combobox",
+   "name": "Account type",
+   "text": "Savings",
+   "value": "Savings"
+  },
+  {
+   "ref": "e9",
+   "role": "textbox",
+   "name": "Nickname",
+   "text": "",
+   "value": ""
+  },
+  {
+   "ref": "e11",
+   "role": "textbox",
+   "name": "Initial deposit",
+   "text": "",
+   "value": ""
+  },
+  {
+   "ref": "e14",
+   "role": "checkbox",
+   "name": "Terms",
+   "text": "on",
+   "value": "on",
+   "checked": false
+  },
+  {
+   "ref": "e15",
+   "role": "button",
+   "name": "Continue to review",
+   "text": "Continue to review"
+  },
+  {
+   "ref": "e1",
+   "role": "cell",
+   "name": "Member Servicing Console",
+   "text": "Member Servicing Console"
+  },
+  {
+   "ref": "e2",
+   "role": "text",
+   "name": "Signed in as ops_user",
+   "text": "Signed in as ops_user"
+  },
+  {
+   "ref": "e4",
+   "role": "text",
+   "name": "New sub-account for Alpha Sample (204817)",
+   "text": "New sub-account for Alpha Sample (204817)"
+  },
+  {
+   "ref": "e6",
+   "role": "cell",
+   "name": "Account type",
+   "text": "Account type"
+  },
+  {
+   "ref": "e8",
+   "role": "cell",
+   "name": "Nickname",
+   "text": "Nickname"
+  },
+  {
+   "ref": "e10",
+   "role": "cell",
+   "name": "Initial deposit",
+   "text": "Initial deposit"
+  },
+  {
+   "ref": "e12",
+   "role": "cell",
+   "name": "Terms",
+   "text": "Terms"
+  },
+  {
+   "ref": "e13",
+   "role": "cell",
+   "name": "I accept the sub-account terms",
+   "text": "I accept the sub-account terms"
+  }
+ ],
+ "snapshot": {
+  "url": "http://127.0.0.1:64800/member/204817/subaccount/new",
+  "title": "New sub-account \u2014 Member Servicing Console",
+  "frame_count": 1,
+  "elements": [
+   {
+    "ref": "e1",
+    "role": "cell",
+    "name": "Member Servicing Console",
+    "text": "Member Servicing Console",
+    "control_type": "td",
+    "frame_path": [],
+    "bbox": {
+     "x": 0.0,
+     "y": 0.0,
+     "w": 616.234375,
+     "h": 31.0
+    },
+    "enabled": true,
+    "visible": true,
+    "value": null,
+    "checked": null
+   },
+   {
+    "ref": "e2",
+    "role": "text",
+    "name": "Signed in as ops_user",
+    "text": "Signed in as ops_user",
+    "control_type": "span",
+    "frame_path": [],
+    "bbox": {
+     "x": 1017.546875,
+     "y": 6.0,
+     "w": 177.265625,
+     "h": 19.0
+    },
+    "enabled": true,
+    "visible": true,
+    "value": null,
+    "checked": null
+   },
+   {
+    "ref": "e3",
+    "role": "link",
+    "name": "Sign out",
+    "text": "Sign out",
+    "control_type": "a",
+    "frame_path": [],
+    "bbox": {
+     "x": 1206.8125,
+     "y": 6.0,
+     "w": 67.1875,
+     "h": 19.0
+    },
+    "enabled": true,
+    "visible": true,
+    "value": null,
+    "checked": null
+   },
+   {
+    "ref": "e4",
+    "role": "text",
+    "name": "New sub-account for Alpha Sample (204817)",
+    "text": "New sub-account for Alpha Sample (204817)",
+    "control_type": "span",
+    "frame_path": [],
+    "bbox": {
+     "x": 16.0,
+     "y": 47.0,
+     "w": 406.296875,
+     "h": 19.0
+    },
+    "enabled": true,
+    "visible": true,
+    "value": null,
+    "checked": null
+   },
+   {
+    "ref": "e5",
+    "role": "landmark",
+    "name": "",
+    "text": "",
+    "control_type": "form",
+    "frame_path": [],
+    "bbox": {
+     "x": 10.0,
+     "y": 72.0,
+     "w": 1260.0,
+     "h": 153.0
+    },
+    "enabled": true,
+    "visible": true,
+    "value": null,
+    "checked": null
+   },
+   {
+    "ref": "e6",
+    "role": "cell",
+    "name": "Account type",
+    "text": "Account type",
+    "control_type": "td",
+    "frame_path": [],
+    "bbox": {
+     "x": 12.0,
+     "y": 74.0,
+     "w": 117.78125,
+     "h": 27.0
+    },
+    "enabled": true,
+    "visible": true,
+    "value": null,
+    "checked": null
+   },
+   {
+    "ref": "e7",
+    "role": "combobox",
+    "name": "Account type",
+    "text": "Savings",
+    "control_type": "select",
+    "frame_path": [],
+    "bbox": {
+     "x": 135.78125,
+     "y": 78.0,
+     "w": 107.0,
+     "h": 19.0
+    },
+    "enabled": true,
+    "visible": true,
+    "value": "Savings",
+    "checked": null
+   },
+   {
+    "ref": "e8",
+    "role": "cell",
+    "name": "Nickname",
+    "text": "Nickname",
+    "control_type": "td",
+    "frame_path": [],
+    "bbox": {
+     "x": 12.0,
+     "y": 103.0,
+     "w": 117.78125,
+     "h": 29.0
+    },
+    "enabled": true,
+    "visible": true,
+    "value": null,
+    "checked": null
+   },
+   {
+    "ref": "e9",
+    "role": "textbox",
+    "name": "Nickname",
+    "text": "",
+    "control_type": "input",
+    "frame_path": [],
+    "bbox": {
+     "x": 135.78125,
+     "y": 107.0,
+     "w": 200.0,
+     "h": 21.0
+    },
+    "enabled": true,
+    "visible": true,
+    "value": "",
+    "checked": null
+   },
+   {
+    "ref": "e10",
+    "role": "cell",
+    "name": "Initial deposit",
+    "text": "Initial deposit",
+    "control_type": "td",
+    "frame_path": [],
+    "bbox": {
+     "x": 12.0,
+     "y": 134.0,
+     "w": 117.78125,
+     "h": 29.0
+    },
+    "enabled": true,
+    "visible": true,
+    "value": null,
+    "checked": null
+   },
+   {
+    "ref": "e11",
+    "role": "textbox",
+    "name": "Initial deposit",
+    "text": "",
+    "control_type": "input",
+    "frame_path": [],
+    "bbox": {
+     "x": 135.78125,
+     "y": 138.0,
+     "w": 100.0,
+     "h": 21.0
+    },
+    "enabled": true,
+    "visible": true,
+    "value": "",
+    "checked": null
+   },
+   {
+    "ref": "e12",
+    "role": "cell",
+    "name": "Terms",
+    "text": "Terms",
+    "control_type": "td",
+    "frame_path": [],
+    "bbox": {
+     "x": 12.0,
+     "y": 165.0,
+     "w": 117.78125,
+     "h": 27.0
+    },
+    "enabled": true,
+    "visible": true,
+    "value": null,
+    "checked": null
+   },
+   {
+    "ref": "e13",
+    "role": "cell",
+    "name": "I accept the sub-account terms",
+    "text": "I accept the sub-account terms",
+    "control_type": "td",
+    "frame_path": [],
+    "bbox": {
+     "x": 131.78125,
+     "y": 165.0,
+     "w": 285.5625,
+     "h": 27.0
+    },
+    "enabled": true,
+    "visible": true,
+    "value": null,
+    "checked": null
+   },
+   {
+    "ref": "e14",
+    "role": "checkbox",
+    "name": "Terms",
+    "text": "on",
+    "control_type": "input",
+    "frame_path": [],
+    "bbox": {
+     "x": 139.78125,
+     "y": 172.0,
+     "w": 13.0,
+     "h": 13.0
+    },
+    "enabled": true,
+    "visible": true,
+    "value": "on",
+    "checked": false
+   },
+   {
+    "ref": "e15",
+    "role": "button",
+    "name": "Continue to review",
+    "text": "Continue to review",
+    "control_type": "button",
+    "frame_path": [],
+    "bbox": {
+     "x": 135.78125,
+     "y": 198.0,
+     "w": 126.40625,
+     "h": 21.0
+    },
+    "enabled": true,
+    "visible": true,
+    "value": null,
+    "checked": null
+   }
+  ]
+ }
+}

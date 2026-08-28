@@ -180,3 +180,20 @@ def test_risky_rules_see_the_prefix_stripped_path(policy: PolicyConfig) -> None:
     assert isinstance(d, NeedsApproval)
     d = g.check(ConcreteAction(ActionType.CLICK, target=el("button", "Complete")), ctx("/portal/member/1/subaccount/review", effective_url_patterns=beta))
     assert isinstance(d, Allow)  # without the prefix the anchored rule does not match: the engine must pass it
+
+
+def test_secret_may_only_be_typed_into_a_credential_field(policy: PolicyConfig) -> None:
+    """decisions A13/P5-15: a SecretRef into a search box is a policy violation; into 'Password' it is fine."""
+    from anton.policy.gate import ActionGate, Allow, Deny, DenyReason, GateContext, LeaseState
+    from anton.schema.artifact import ActionType
+    from anton.schema.snapshot import BBox
+    from anton.surface.base import ConcreteAction, ResolvedElement
+
+    gate = ActionGate(policy)
+    ctx = GateContext(current_url="http://127.0.0.1:8000/search", lease_state=LeaseState.AGENT_ACTIVE, effective_url_patterns=["/search", "/login"])
+    box = ResolvedElement(ref="e1", frame_path=[], bbox=BBox(x=0, y=0, w=1, h=1), control_type="input", role="textbox", name="Member ID", handle=None)
+    pw = ResolvedElement(ref="e2", frame_path=[], bbox=BBox(x=0, y=0, w=1, h=1), control_type="input", role="textbox", name="Password", handle=None)
+    d = gate.check(ConcreteAction(ActionType.FILL, target=box, value="demo-pass-1", value_kind="secret"), ctx)
+    assert isinstance(d, Deny) and d.reason is DenyReason.SECRET_TARGET and d.is_policy_violation
+    assert isinstance(gate.check(ConcreteAction(ActionType.FILL, target=pw, value="demo-pass-1", value_kind="secret"), ctx), Allow)
+    assert isinstance(gate.check(ConcreteAction(ActionType.FILL, target=box, value="204817", value_kind="param"), ctx), Allow)

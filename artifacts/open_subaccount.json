@@ -6,9 +6,9 @@
   "version": "1.0.0",
   "status": "approved",
   "approval": {
-    "approved_at": "2026-08-28T16:04:33.460010Z",
+    "approved_at": "2026-08-28T19:28:13.761221Z",
     "approved_by": "satya",
-    "artifact_sha256": "fed8de2b6928e1f6e3ac62ccd7a358d76c68d128925a8ef1980759ff14398cea"
+    "artifact_sha256": "935b5212e844d48e81e7759c058e1d7d77077f31276f7badb64dc290e1e5d45f"
   },
   "app_profile": "profiles/servicing.yaml",
   "requires_flows": [
@@ -85,14 +85,24 @@
           "candidates": [
             {
               "tier": 2,
-              "rationale": "the value cell right of the 'Account Number' label on the confirmation page",
+              "rationale": "the element sits right of its label 'Account Number'; survives a name/attribute change",
               "frame_path": [],
               "kind": "label_relative",
               "relation": "right_of_label",
               "anchor_text": "Account Number",
               "anchor_col_header": null,
               "col_header": null,
-              "target_role": null
+              "target_role": "cell"
+            },
+            {
+              "tier": 3,
+              "rationale": "normalized box observed during discovery; last resort, sets drift_flag",
+              "frame_path": [],
+              "kind": "bbox",
+              "x": 0.1198,
+              "y": 0.1117,
+              "w": 0.094,
+              "h": 0.0311
             }
           ],
           "fingerprint": {
@@ -116,13 +126,13 @@
   "steps": [
     {
       "id": "fill_member_id",
-      "description": "Type the member id into the search form",
+      "description": "Enter member ID to search for the member",
       "action": "FILL",
       "target": {
         "candidates": [
           {
             "tier": 1,
-            "rationale": "computed role 'textbox' + accessible name 'Member ID' (from its label cell / button text) is the stable semantic identity",
+            "rationale": "computed role 'textbox' + accessible name 'Member ID' observed during discovery; the semantic identity of the control",
             "frame_path": [],
             "kind": "role_name",
             "role": "textbox",
@@ -131,7 +141,7 @@
           },
           {
             "tier": 2,
-            "rationale": "the control sits in the cell right of its 'Member ID' label; survives an attribute/name change",
+            "rationale": "the element sits right of its label 'Member ID'; survives a name/attribute change",
             "frame_path": [],
             "kind": "label_relative",
             "relation": "right_of_label",
@@ -142,7 +152,7 @@
           },
           {
             "tier": 3,
-            "rationale": "measured on the recorded app at 1280x900; last resort",
+            "rationale": "normalized box observed during discovery; last resort, sets drift_flag",
             "frame_path": [],
             "kind": "bbox",
             "x": 0.0903,
@@ -172,7 +182,7 @@
               "candidates": [
                 {
                   "tier": 1,
-                  "rationale": "computed role 'textbox' + accessible name 'Member ID' (from its label cell / button text) is the stable semantic identity",
+                  "rationale": "computed role 'textbox' + accessible name 'Member ID' observed during discovery; the semantic identity of the control",
                   "frame_path": [],
                   "kind": "role_name",
                   "role": "textbox",
@@ -181,7 +191,7 @@
                 },
                 {
                   "tier": 2,
-                  "rationale": "the control sits in the cell right of its 'Member ID' label; survives an attribute/name change",
+                  "rationale": "the element sits right of its label 'Member ID'; survives a name/attribute change",
                   "frame_path": [],
                   "kind": "label_relative",
                   "relation": "right_of_label",
@@ -192,7 +202,7 @@
                 },
                 {
                   "tier": 3,
-                  "rationale": "measured on the recorded app at 1280x900; last resort",
+                  "rationale": "normalized box observed during discovery; last resort, sets drift_flag",
                   "frame_path": [],
                   "kind": "bbox",
                   "x": 0.0903,
@@ -221,13 +231,13 @@
     },
     {
       "id": "click_search",
-      "description": "Submit the search; the app opens the member profile",
+      "description": "Search for the member with the entered ID",
       "action": "CLICK",
       "target": {
         "candidates": [
           {
             "tier": 1,
-            "rationale": "computed role 'button' + accessible name 'Search' (from its label cell / button text) is the stable semantic identity",
+            "rationale": "computed role 'button' + accessible name 'Search' observed during discovery; the semantic identity of the control",
             "frame_path": [],
             "kind": "role_name",
             "role": "button",
@@ -235,15 +245,8 @@
             "exact": false
           },
           {
-            "tier": 2,
-            "rationale": "the visible text 'Search' is the label users see",
-            "frame_path": [],
-            "kind": "exact_text",
-            "text": "Search"
-          },
-          {
             "tier": 3,
-            "rationale": "measured on the recorded app at 1280x900; last resort",
+            "rationale": "normalized box observed during discovery; last resort, sets drift_flag",
             "frame_path": [],
             "kind": "bbox",
             "x": 0.0903,
@@ -280,13 +283,13 @@
     },
     {
       "id": "click_open_sub_account",
-      "description": "Open the new sub-account form from the detail pane",
+      "description": "Navigate to the sub-account opening form",
       "action": "CLICK",
       "target": {
         "candidates": [
           {
             "tier": 1,
-            "rationale": "computed role 'link' + accessible name 'Open Sub-Account' (from its label cell / button text) is the stable semantic identity",
+            "rationale": "computed role 'link' + accessible name 'Open Sub-Account' observed during discovery; the semantic identity of the control",
             "frame_path": [
               "iframe[name=detail]"
             ],
@@ -296,17 +299,8 @@
             "exact": false
           },
           {
-            "tier": 2,
-            "rationale": "the visible text 'Open Sub-Account' is the label users see",
-            "frame_path": [
-              "iframe[name=detail]"
-            ],
-            "kind": "exact_text",
-            "text": "Open Sub-Account"
-          },
-          {
             "tier": 3,
-            "rationale": "measured on the recorded app at 1280x900; last resort",
+            "rationale": "normalized box observed during discovery; last resort, sets drift_flag",
             "frame_path": [
               "iframe[name=detail]"
             ],
@@ -334,7 +328,7 @@
             "regex": "^/member/[^/]+/subaccount/new$"
           },
           {
-            "kind": "text_visible",
+            "kind": "title_matches",
             "regex": "New sub-account"
           }
         ]
@@ -344,119 +338,14 @@
       "detectors": []
     },
     {
-      "id": "select_account_type",
-      "description": "Choose the Savings account type",
-      "action": "SELECT",
-      "target": {
-        "candidates": [
-          {
-            "tier": 1,
-            "rationale": "computed role 'combobox' + accessible name 'Account type' (from its label cell / button text) is the stable semantic identity",
-            "frame_path": [],
-            "kind": "role_name",
-            "role": "combobox",
-            "name": "Account type",
-            "exact": false
-          },
-          {
-            "tier": 2,
-            "rationale": "the control sits in the cell right of its 'Account type' label; survives an attribute/name change",
-            "frame_path": [],
-            "kind": "label_relative",
-            "relation": "right_of_label",
-            "anchor_text": "Account type",
-            "anchor_col_header": null,
-            "col_header": null,
-            "target_role": "combobox"
-          },
-          {
-            "tier": 3,
-            "rationale": "measured on the recorded app at 1280x900; last resort",
-            "frame_path": [],
-            "kind": "bbox",
-            "x": 0.1061,
-            "y": 0.0867,
-            "w": 0.0836,
-            "h": 0.0211
-          }
-        ],
-        "fingerprint": {
-          "role": "combobox",
-          "name_snippet": "Account type",
-          "control_type": "select",
-          "text_snippet": null
-        }
-      },
-      "value": {
-        "kind": "literal",
-        "value": "Savings"
-      },
-      "risk": "SAFE",
-      "requires_approval": false,
-      "postcondition": {
-        "all_of": [
-          {
-            "kind": "field_value",
-            "ladder": {
-              "candidates": [
-                {
-                  "tier": 1,
-                  "rationale": "computed role 'combobox' + accessible name 'Account type' (from its label cell / button text) is the stable semantic identity",
-                  "frame_path": [],
-                  "kind": "role_name",
-                  "role": "combobox",
-                  "name": "Account type",
-                  "exact": false
-                },
-                {
-                  "tier": 2,
-                  "rationale": "the control sits in the cell right of its 'Account type' label; survives an attribute/name change",
-                  "frame_path": [],
-                  "kind": "label_relative",
-                  "relation": "right_of_label",
-                  "anchor_text": "Account type",
-                  "anchor_col_header": null,
-                  "col_header": null,
-                  "target_role": "combobox"
-                },
-                {
-                  "tier": 3,
-                  "rationale": "measured on the recorded app at 1280x900; last resort",
-                  "frame_path": [],
-                  "kind": "bbox",
-                  "x": 0.1061,
-                  "y": 0.0867,
-                  "w": 0.0836,
-                  "h": 0.0211
-                }
-              ],
-              "fingerprint": {
-                "role": "combobox",
-                "name_snippet": "Account type",
-                "control_type": "select",
-                "text_snippet": null
-              }
-            },
-            "expected": {
-              "kind": "literal",
-              "value": "Savings"
-            }
-          }
-        ]
-      },
-      "wait_timeout_ms": 8000,
-      "retries": 1,
-      "detectors": []
-    },
-    {
       "id": "fill_nickname",
-      "description": "Type the nickname",
+      "description": "Fill nickname field",
       "action": "FILL",
       "target": {
         "candidates": [
           {
             "tier": 1,
-            "rationale": "computed role 'textbox' + accessible name 'Nickname' (from its label cell / button text) is the stable semantic identity",
+            "rationale": "computed role 'textbox' + accessible name 'Nickname' observed during discovery; the semantic identity of the control",
             "frame_path": [],
             "kind": "role_name",
             "role": "textbox",
@@ -465,7 +354,7 @@
           },
           {
             "tier": 2,
-            "rationale": "the control sits in the cell right of its 'Nickname' label; survives an attribute/name change",
+            "rationale": "the element sits right of its label 'Nickname'; survives a name/attribute change",
             "frame_path": [],
             "kind": "label_relative",
             "relation": "right_of_label",
@@ -476,7 +365,7 @@
           },
           {
             "tier": 3,
-            "rationale": "measured on the recorded app at 1280x900; last resort",
+            "rationale": "normalized box observed during discovery; last resort, sets drift_flag",
             "frame_path": [],
             "kind": "bbox",
             "x": 0.1061,
@@ -506,7 +395,7 @@
               "candidates": [
                 {
                   "tier": 1,
-                  "rationale": "computed role 'textbox' + accessible name 'Nickname' (from its label cell / button text) is the stable semantic identity",
+                  "rationale": "computed role 'textbox' + accessible name 'Nickname' observed during discovery; the semantic identity of the control",
                   "frame_path": [],
                   "kind": "role_name",
                   "role": "textbox",
@@ -515,7 +404,7 @@
                 },
                 {
                   "tier": 2,
-                  "rationale": "the control sits in the cell right of its 'Nickname' label; survives an attribute/name change",
+                  "rationale": "the element sits right of its label 'Nickname'; survives a name/attribute change",
                   "frame_path": [],
                   "kind": "label_relative",
                   "relation": "right_of_label",
@@ -526,7 +415,7 @@
                 },
                 {
                   "tier": 3,
-                  "rationale": "measured on the recorded app at 1280x900; last resort",
+                  "rationale": "normalized box observed during discovery; last resort, sets drift_flag",
                   "frame_path": [],
                   "kind": "bbox",
                   "x": 0.1061,
@@ -555,13 +444,13 @@
     },
     {
       "id": "fill_initial_deposit",
-      "description": "Type the opening deposit",
+      "description": "Fill initial deposit amount",
       "action": "FILL",
       "target": {
         "candidates": [
           {
             "tier": 1,
-            "rationale": "computed role 'textbox' + accessible name 'Initial deposit' (from its label cell / button text) is the stable semantic identity",
+            "rationale": "computed role 'textbox' + accessible name 'Initial deposit' observed during discovery; the semantic identity of the control",
             "frame_path": [],
             "kind": "role_name",
             "role": "textbox",
@@ -570,7 +459,7 @@
           },
           {
             "tier": 2,
-            "rationale": "the control sits in the cell right of its 'Initial deposit' label; survives an attribute/name change",
+            "rationale": "the element sits right of its label 'Initial deposit'; survives a name/attribute change",
             "frame_path": [],
             "kind": "label_relative",
             "relation": "right_of_label",
@@ -581,7 +470,7 @@
           },
           {
             "tier": 3,
-            "rationale": "measured on the recorded app at 1280x900; last resort",
+            "rationale": "normalized box observed during discovery; last resort, sets drift_flag",
             "frame_path": [],
             "kind": "bbox",
             "x": 0.1061,
@@ -611,7 +500,7 @@
               "candidates": [
                 {
                   "tier": 1,
-                  "rationale": "computed role 'textbox' + accessible name 'Initial deposit' (from its label cell / button text) is the stable semantic identity",
+                  "rationale": "computed role 'textbox' + accessible name 'Initial deposit' observed during discovery; the semantic identity of the control",
                   "frame_path": [],
                   "kind": "role_name",
                   "role": "textbox",
@@ -620,7 +509,7 @@
                 },
                 {
                   "tier": 2,
-                  "rationale": "the control sits in the cell right of its 'Initial deposit' label; survives an attribute/name change",
+                  "rationale": "the element sits right of its label 'Initial deposit'; survives a name/attribute change",
                   "frame_path": [],
                   "kind": "label_relative",
                   "relation": "right_of_label",
@@ -631,7 +520,7 @@
                 },
                 {
                   "tier": 3,
-                  "rationale": "measured on the recorded app at 1280x900; last resort",
+                  "rationale": "normalized box observed during discovery; last resort, sets drift_flag",
                   "frame_path": [],
                   "kind": "bbox",
                   "x": 0.1061,
@@ -660,13 +549,13 @@
     },
     {
       "id": "click_terms",
-      "description": "Accept the sub-account terms",
+      "description": "Accept the sub-account terms checkbox",
       "action": "CLICK",
       "target": {
         "candidates": [
           {
             "tier": 1,
-            "rationale": "computed role 'checkbox' + accessible name 'Terms' (from its label cell / button text) is the stable semantic identity",
+            "rationale": "computed role 'checkbox' + accessible name 'Terms' observed during discovery; the semantic identity of the control",
             "frame_path": [],
             "kind": "role_name",
             "role": "checkbox",
@@ -675,7 +564,7 @@
           },
           {
             "tier": 2,
-            "rationale": "the control sits in the cell right of its 'Terms' label; survives an attribute/name change",
+            "rationale": "the element sits right of its label 'Terms'; survives a name/attribute change",
             "frame_path": [],
             "kind": "label_relative",
             "relation": "right_of_label",
@@ -686,7 +575,7 @@
           },
           {
             "tier": 3,
-            "rationale": "measured on the recorded app at 1280x900; last resort",
+            "rationale": "normalized box observed during discovery; last resort, sets drift_flag",
             "frame_path": [],
             "kind": "bbox",
             "x": 0.1092,
@@ -713,7 +602,7 @@
               "candidates": [
                 {
                   "tier": 1,
-                  "rationale": "computed role 'checkbox' + accessible name 'Terms' (from its label cell / button text) is the stable semantic identity",
+                  "rationale": "computed role 'checkbox' + accessible name 'Terms' observed during discovery; the semantic identity of the control",
                   "frame_path": [],
                   "kind": "role_name",
                   "role": "checkbox",
@@ -722,7 +611,7 @@
                 },
                 {
                   "tier": 2,
-                  "rationale": "the control sits in the cell right of its 'Terms' label; survives an attribute/name change",
+                  "rationale": "the element sits right of its label 'Terms'; survives a name/attribute change",
                   "frame_path": [],
                   "kind": "label_relative",
                   "relation": "right_of_label",
@@ -733,7 +622,7 @@
                 },
                 {
                   "tier": 3,
-                  "rationale": "measured on the recorded app at 1280x900; last resort",
+                  "rationale": "normalized box observed during discovery; last resort, sets drift_flag",
                   "frame_path": [],
                   "kind": "bbox",
                   "x": 0.1092,
@@ -759,13 +648,13 @@
     },
     {
       "id": "click_continue_to_review",
-      "description": "Submit the form; the app validates it and shows the review page",
+      "description": "Proceed to review step",
       "action": "CLICK",
       "target": {
         "candidates": [
           {
             "tier": 1,
-            "rationale": "computed role 'button' + accessible name 'Continue to review' (from its label cell / button text) is the stable semantic identity",
+            "rationale": "computed role 'button' + accessible name 'Continue to review' observed during discovery; the semantic identity of the control",
             "frame_path": [],
             "kind": "role_name",
             "role": "button",
@@ -773,15 +662,8 @@
             "exact": false
           },
           {
-            "tier": 2,
-            "rationale": "the visible text 'Continue to review' is the label users see",
-            "frame_path": [],
-            "kind": "exact_text",
-            "text": "Continue to review"
-          },
-          {
             "tier": 3,
-            "rationale": "measured on the recorded app at 1280x900; last resort",
+            "rationale": "normalized box observed during discovery; last resort, sets drift_flag",
             "frame_path": [],
             "kind": "bbox",
             "x": 0.1061,
@@ -818,13 +700,13 @@
     },
     {
       "id": "click_confirm_and_open_account",
-      "description": "Confirm: irreversibly opens the sub-account",
+      "description": "Confirm and open the sub-account",
       "action": "CLICK",
       "target": {
         "candidates": [
           {
             "tier": 1,
-            "rationale": "computed role 'button' + accessible name 'Confirm and open account' (from its label cell / button text) is the stable semantic identity",
+            "rationale": "computed role 'button' + accessible name 'Confirm and open account' observed during discovery; the semantic identity of the control",
             "frame_path": [],
             "kind": "role_name",
             "role": "button",
@@ -832,15 +714,8 @@
             "exact": false
           },
           {
-            "tier": 2,
-            "rationale": "the visible text 'Confirm and open account' is the label users see",
-            "frame_path": [],
-            "kind": "exact_text",
-            "text": "Confirm and open account"
-          },
-          {
             "tier": 3,
-            "rationale": "measured on the recorded app at 1280x900; last resort",
+            "rationale": "normalized box observed during discovery; last resort, sets drift_flag",
             "frame_path": [],
             "kind": "bbox",
             "x": 0.0125,
@@ -883,19 +758,33 @@
         "regex": "^/member/[^/]+/subaccount/confirmation$"
       },
       {
+        "kind": "text_visible",
+        "regex": "Sub-account opened"
+      },
+      {
         "kind": "element_visible",
         "ladder": {
           "candidates": [
             {
               "tier": 2,
-              "rationale": "the value cell right of the 'Account Number' label on the confirmation page",
+              "rationale": "the element sits right of its label 'Account Number'; survives a name/attribute change",
               "frame_path": [],
               "kind": "label_relative",
               "relation": "right_of_label",
               "anchor_text": "Account Number",
               "anchor_col_header": null,
               "col_header": null,
-              "target_role": null
+              "target_role": "cell"
+            },
+            {
+              "tier": 3,
+              "rationale": "normalized box observed during discovery; last resort, sets drift_flag",
+              "frame_path": [],
+              "kind": "bbox",
+              "x": 0.1198,
+              "y": 0.1117,
+              "w": 0.094,
+              "h": 0.0311
             }
           ],
           "fingerprint": {
@@ -909,16 +798,16 @@
     ]
   },
   "provenance": {
-    "origin": "hand_authored",
-    "discovery_run_id": null,
-    "model": null,
-    "created_at": "2026-08-28T16:04:32.730983Z",
+    "origin": "discovery",
+    "discovery_run_id": "20260828T192729Z-07ca25",
+    "model": "claude-sonnet-5",
+    "created_at": "2026-08-28T19:27:29Z",
     "surface": "web",
     "recorded_against": {
       "app_id": "servicing",
       "tenant_id": "alpha",
       "app_version": "1",
-      "entry_url": "http://localhost:8000/search"
+      "entry_url": "http://127.0.0.1:64800/search"
     }
   }
 }
