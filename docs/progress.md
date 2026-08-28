@@ -221,6 +221,6 @@ every FIX item was applied (decisions P1-11..P1-15) and re-verified above.
 ## Next actions (the author's)
 1. Write REPORT.md — every `[AUTHOR: …]` bullet is a prompt seeded with the decision actually taken (docs/decisions.md has the one-liners); §15 forbids me from writing the prose.
 2. Re-confirm the human gates on the final code if desired: `make verify-5b`, `make demo-discovery-approval` (both passed on 2026-08-28 on code that has since only changed in the console layout, the recorder's console-click filter, the run-dir path in run.jsonl and the phase-8 split of outcomes.py/prompts.py).
-3. Decide the open vetoes: A1 (operator Deny ⇒ BLOCKED(APPROVAL_DENIED) — implemented), A12 (`row_anchor_col_header`), A13 (`SECRET_TARGET`); and the SPEC/CLAUDE location (P8-6 keeps them in the root).
+3. ~~Decide the open vetoes~~ — A1, A12, A13 confirmed by the author on 2026-08-28 (A13's known limit noted for REPORT §6). SPEC/CLAUDE stay in the root (P8-6).
 4. Rotate the API key that was pasted into chat (P4-29); `.env` is gitignored.
 5. `git log` is the phase history; `make verify-all` is the definition of done — run it once more before submitting.
