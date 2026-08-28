@@ -1,0 +1,15 @@
+<html><head><title>{% block title %}{{ labels.brand }}{% endblock %}</title>
+<link rel="stylesheet" href="{{ prefix }}/static/console.css"></head>
+<body>
+<table width="100%" cellspacing="0" cellpadding="0" style="border-collapse:collapse"><tr><td>
+  <table width="100%" cellspacing="0" cellpadding="6" class="hdr"><tr>
+    <td class="cell" style="font-weight:bold">{{ labels.brand }}</td>
+    <td class="cell" align="right">{% if session.get('user') %}<span style="margin-right:12px">Signed in as {{ session['user'] }}</span><a href="{{ prefix }}/logout">Sign out</a>{% endif %}</td>
+  </tr></table>
+</td></tr><tr><td>
+  <table width="100%" cellspacing="0" cellpadding="10" class="c1"><tr><td class="cell">
+  {% block body %}{% endblock %}
+  </td></tr></table>
+</td></tr></table>
+{% block modal %}{% endblock %}
+</body></html>

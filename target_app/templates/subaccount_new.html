@@ -1,0 +1,16 @@
+{% extends "base.html" %}{% block title %}New sub-account — {{ labels.brand }}{% endblock %}
+{% block body %}
+<table class="row" cellpadding="4"><tr><td class="cell"><span style="font-size:16px;font-weight:bold">New sub-account for {{ m.first_name }} {{ m.last_name }} ({{ m.member_id }})</span></td></tr>
+{% if errors %}<tr><td class="cell err">Please correct the errors below.</td></tr>{% endif %}</table>
+<form method="post" action="{{ prefix }}/member/{{ m.member_id }}/subaccount/new" novalidate>
+<table class="row" cellpadding="4">
+<tr><td class="cell">Account type</td><td class="cell"><select name="account_type">
+  <option value="Savings" {% if form.account_type == 'Savings' %}selected{% endif %}>Savings</option>
+  <option value="Money Market" {% if form.account_type == 'Money Market' %}selected{% endif %}>Money Market</option>
+</select></td></tr>
+<tr><td class="cell">Nickname</td><td class="cell"><input type="text" name="nickname" value="{{ form.nickname }}" style="width:200px">{% if errors.nickname %} <span class="err">{{ errors.nickname }}</span>{% endif %}</td></tr>
+<tr><td class="cell">Initial deposit</td><td class="cell"><input type="number" name="initial_deposit" value="{{ form.initial_deposit }}" style="width:100px">{% if errors.initial_deposit %} <span class="err">{{ errors.initial_deposit }}</span>{% endif %}</td></tr>
+<tr><td class="cell">Terms</td><td class="cell"><input type="checkbox" name="terms" {% if form.terms == 'on' %}checked{% endif %}> I accept the sub-account terms{% if errors.terms %} <span class="err">{{ errors.terms }}</span>{% endif %}</td></tr>
+<tr><td class="cell"></td><td class="cell"><button type="submit">Continue to review</button></td></tr>
+</table></form>
+{% endblock %}

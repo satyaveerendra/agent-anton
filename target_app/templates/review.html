@@ -1,0 +1,13 @@
+{% extends "base.html" %}{% block title %}Review — {{ labels.brand }}{% endblock %}
+{% block body %}
+<table class="row" cellpadding="4"><tr><td class="cell"><span style="font-size:16px;font-weight:bold">Review new sub-account</span></td></tr></table>
+<table class="row" cellpadding="4" border="1" style="border-collapse:collapse">
+<tr><td class="cell">Member</td><td class="cell">{{ m.first_name }} {{ m.last_name }} ({{ m.member_id }})</td></tr>
+<tr><td class="cell">Account type</td><td class="cell">{{ pending.account_type }}</td></tr>
+<tr><td class="cell">Nickname</td><td class="cell">{{ pending.nickname }}</td></tr>
+<tr><td class="cell">Initial deposit</td><td class="cell">{{ pending.initial_deposit | money }}</td></tr>
+</table>
+<form method="post" action="{{ prefix }}/member/{{ m.member_id }}/subaccount/review">
+<table class="row" cellpadding="4"><tr><td class="cell"><button type="submit">{{ labels.confirm }}</button>
+<a href="{{ prefix }}/member/{{ m.member_id }}/subaccount/new" style="margin-left:12px">Back</a></td></tr></table></form>
+{% endblock %}

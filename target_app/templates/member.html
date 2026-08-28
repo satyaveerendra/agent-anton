@@ -1,0 +1,8 @@
+{% extends "base.html" %}{% block title %}Member Profile — {{ labels.brand }}{% endblock %}
+{% block body %}
+<table class="row" cellpadding="4"><tr><td class="cell"><span style="font-size:16px;font-weight:bold">Member Profile</span></td>
+<td class="cell" align="right"><a href="{{ prefix }}/search">Back to search</a></td></tr></table>
+<table class="row" width="100%" cellpadding="0"><tr><td class="cell">
+<iframe name="detail" src="{{ prefix }}/member/{{ m.member_id }}/pane" width="100%" height="420" frameborder="0" style="border:1px solid #999"></iframe>
+</td></tr></table>
+{% endblock %}

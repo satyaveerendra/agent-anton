@@ -1,0 +1,14 @@
+{% extends "base.html" %}{% block title %}Sign in — {{ labels.brand }}{% endblock %}
+{% block body %}
+<table class="row" cellpadding="4"><tr><td class="cell"><span style="font-size:16px;font-weight:bold">Sign in</span></td></tr>
+{% if expired %}<tr><td class="cell err">Your session has expired. Please sign in again.</td></tr>{% endif %}
+{% if error %}<tr><td class="cell err">{{ error }}</td></tr>{% endif %}
+</table>
+<form method="post" action="{{ prefix }}/login">
+<input type="hidden" name="next" value="{{ next }}">
+<table class="row" cellpadding="4">
+<tr><td class="cell">Username</td><td class="cell"><input type="text" name="username" style="width:160px"></td></tr>
+<tr><td class="cell">Password</td><td class="cell"><input type="password" name="password" style="width:160px"></td></tr>
+<tr><td class="cell"></td><td class="cell"><button type="submit">Sign in</button></td></tr>
+</table></form>
+{% endblock %}

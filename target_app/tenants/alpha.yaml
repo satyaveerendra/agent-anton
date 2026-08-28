@@ -1,0 +1,8 @@
+tenant_id: alpha
+route_prefix: ""
+labels:
+  brand: "Member Servicing Console"
+  member_id: "Member ID"
+  open_subaccount: "Open Sub-Account"
+  confirm: "Confirm and open account"
+accounts_columns: [type, account_no, balance]

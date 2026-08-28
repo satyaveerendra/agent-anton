@@ -1,8 +1,8 @@
 """``python -m anton <cmd>`` — a thin wrapper (SPEC §13).
 
-Phase 1 ships ``inspect`` and ``approve``. ``target``, ``discover`` and ``replay`` are
-registered so the usage text is complete, and exit 2 with a clear message until their
-phase lands (SPEC §17).
+Phase 1 shipped ``inspect`` and ``approve``; phase 2 adds ``target serve``. ``discover`` and
+``replay`` are registered so the usage text is complete, and exit 2 with a clear message
+until their phase lands (SPEC §17).
 """
 
 from __future__ import annotations
@@ -42,7 +42,6 @@ from anton.schema.loader import (
 from anton.schema.result import EXIT_USAGE
 
 NOT_YET = {
-    "target": "phase 2",
     "discover": "phase 5",
     "replay": "phase 4",
 }
@@ -204,6 +203,25 @@ def cmd_approve(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_target(args: argparse.Namespace) -> int:
+    """``anton target serve``: run the Member Servicing Console (SPEC §6, §13)."""
+    if args.target_command != "serve":
+        print("anton target: expected 'serve'", file=sys.stderr)
+        return EXIT_USAGE
+    if args.tenant is not None:
+        os.environ["TENANT"] = args.tenant
+    if args.inject:
+        os.environ["INJECT"] = ",".join(args.inject)
+    if args.slow_ms is not None:
+        os.environ["SLOW_MS"] = str(args.slow_ms)
+    if args.debug_state:
+        os.environ["ANTON_TARGET_DEBUG"] = "1"
+    from target_app.app import serve
+
+    serve(host=args.host, port=args.port)
+    return 0
+
+
 def cmd_not_yet(args: argparse.Namespace) -> int:
     print(f"anton {args.command}: not available until {NOT_YET[args.command]} (SPEC §17)", file=sys.stderr)
     return EXIT_USAGE
@@ -224,6 +242,17 @@ def build_parser() -> argparse.ArgumentParser:
     p_approve.add_argument("--by", default=None)
     p_approve.add_argument("--policy", type=Path, default=None)
     p_approve.set_defaults(func=cmd_approve)
+
+    p_target = sub.add_parser("target", help="run the local target app (Member Servicing Console)")
+    target_sub = p_target.add_subparsers(dest="target_command", required=True)
+    p_serve = target_sub.add_parser("serve", help="serve the target app")
+    p_serve.add_argument("--tenant", choices=["alpha", "beta"], default=None, help="default: $TENANT or alpha")
+    p_serve.add_argument("--inject", action="append", default=[], help="arm an injection (repeatable): slow|expire|modal|deny|err500")
+    p_serve.add_argument("--slow-ms", type=int, default=None, dest="slow_ms")
+    p_serve.add_argument("--port", type=int, default=8000)
+    p_serve.add_argument("--host", default="127.0.0.1")
+    p_serve.add_argument("--debug-state", action="store_true", dest="debug_state", help="expose GET /__state/member/<id> (acceptance fixture only)")
+    p_serve.set_defaults(func=cmd_target)
 
     for name in NOT_YET:
         p = sub.add_parser(name, help=f"(available from {NOT_YET[name]})")

@@ -1,0 +1,5 @@
+{% extends "base.html" %}{% block title %}Permission denied — {{ labels.brand }}{% endblock %}
+{% block body %}
+<table class="row" cellpadding="4"><tr><td class="cell err">You do not have permission to open sub-accounts.</td></tr>
+<tr><td class="cell"><a href="{{ prefix }}/member/{{ m.member_id }}">Back to member</a></td></tr></table>
+{% endblock %}

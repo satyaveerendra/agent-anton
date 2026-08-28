@@ -1,0 +1,5 @@
+{% extends "base.html" %}{% block title %}Member lookup — {{ labels.brand }}{% endblock %}
+{% block body %}
+<table class="row" cellpadding="4"><tr><td class="cell">No member found for {{ member_id }}</td></tr>
+<tr><td class="cell"><a href="{{ prefix }}/search">Back to search</a></td></tr></table>
+{% endblock %}

@@ -1,0 +1,485 @@
+{
+  "note": "SYNTHETIC DATA \u2014 every name, SSN (900-XX-XXXX is an invalid range) and balance is fake.",
+  "credentials": {
+    "username": "ops_user",
+    "password": "demo-pass-1",
+    "note": "FAKE demo credential"
+  },
+  "members": [
+    {
+      "member_id": "204817",
+      "first_name": "Alpha",
+      "last_name": "Sample",
+      "dob": "2002-05-02",
+      "ssn": "900-37-2769",
+      "accounts": [
+        {
+          "type": "Checking",
+          "account_no": "120481701",
+          "balance": 5577.9
+        },
+        {
+          "type": "Savings",
+          "account_no": "220481701",
+          "balance": 19823.28
+        }
+      ]
+    },
+    {
+      "member_id": "310552",
+      "first_name": "Bravo",
+      "last_name": "Example",
+      "dob": "1971-12-05",
+      "ssn": "900-97-5099",
+      "accounts": [
+        {
+          "type": "Checking",
+          "account_no": "131055201",
+          "balance": 2683.36
+        },
+        {
+          "type": "Savings",
+          "account_no": "231055201",
+          "balance": 23950.9
+        }
+      ]
+    },
+    {
+      "member_id": "484390",
+      "first_name": "Charlie",
+      "last_name": "Placeholder",
+      "dob": "1964-10-17",
+      "ssn": "900-97-2631",
+      "accounts": [
+        {
+          "type": "Checking",
+          "account_no": "148439001",
+          "balance": 238.61
+        },
+        {
+          "type": "Savings",
+          "account_no": "248439001",
+          "balance": 15668.81
+        }
+      ]
+    },
+    {
+      "member_id": "445718",
+      "first_name": "Delta",
+      "last_name": "Testcase",
+      "dob": "1993-03-16",
+      "ssn": "900-50-6101",
+      "accounts": [
+        {
+          "type": "Checking",
+          "account_no": "144571801",
+          "balance": 5541.17
+        },
+        {
+          "type": "Savings",
+          "account_no": "244571801",
+          "balance": 844.18
+        }
+      ]
+    },
+    {
+      "member_id": "317602",
+      "first_name": "Echo",
+      "last_name": "Fixture",
+      "dob": "2004-11-20",
+      "ssn": "900-83-3877",
+      "accounts": [
+        {
+          "type": "Checking",
+          "account_no": "131760201",
+          "balance": 7257.09
+        },
+        {
+          "type": "Savings",
+          "account_no": "231760201",
+          "balance": 641.14
+        }
+      ]
+    },
+    {
+      "member_id": "388251",
+      "first_name": "Foxtrot",
+      "last_name": "Dummy",
+      "dob": "1960-06-15",
+      "ssn": "900-90-4960",
+      "accounts": [
+        {
+          "type": "Checking",
+          "account_no": "138825101",
+          "balance": 7482.23
+        },
+        {
+          "type": "Savings",
+          "account_no": "238825101",
+          "balance": 20969.49
+        }
+      ]
+    },
+    {
+      "member_id": "580846",
+      "first_name": "Golf",
+      "last_name": "Mock",
+      "dob": "1982-09-25",
+      "ssn": "900-51-3260",
+      "accounts": [
+        {
+          "type": "Checking",
+          "account_no": "158084601",
+          "balance": 6910.33
+        },
+        {
+          "type": "Savings",
+          "account_no": "258084601",
+          "balance": 13760.28
+        }
+      ]
+    },
+    {
+      "member_id": "801095",
+      "first_name": "Hotel",
+      "last_name": "Stub",
+      "dob": "1991-02-21",
+      "ssn": "900-69-1979",
+      "accounts": [
+        {
+          "type": "Checking",
+          "account_no": "180109501",
+          "balance": 6477.03
+        },
+        {
+          "type": "Savings",
+          "account_no": "280109501",
+          "balance": 13408.53
+        }
+      ]
+    },
+    {
+      "member_id": "905187",
+      "first_name": "India",
+      "last_name": "Sample",
+      "dob": "1959-10-06",
+      "ssn": "900-73-4774",
+      "accounts": [
+        {
+          "type": "Checking",
+          "account_no": "190518701",
+          "balance": 5710.38
+        },
+        {
+          "type": "Savings",
+          "account_no": "290518701",
+          "balance": 7673.24
+        }
+      ]
+    },
+    {
+      "member_id": "703018",
+      "first_name": "Juliet",
+      "last_name": "Example",
+      "dob": "1963-02-21",
+      "ssn": "900-26-5780",
+      "accounts": [
+        {
+          "type": "Checking",
+          "account_no": "170301801",
+          "balance": 7621.78
+        },
+        {
+          "type": "Savings",
+          "account_no": "270301801",
+          "balance": 1500.64
+        }
+      ]
+    },
+    {
+      "member_id": "757865",
+      "first_name": "Kilo",
+      "last_name": "Placeholder",
+      "dob": "1977-02-05",
+      "ssn": "900-14-4906",
+      "accounts": [
+        {
+          "type": "Checking",
+          "account_no": "175786501",
+          "balance": 3812.92
+        },
+        {
+          "type": "Savings",
+          "account_no": "275786501",
+          "balance": 1793.12
+        }
+      ]
+    },
+    {
+      "member_id": "951302",
+      "first_name": "Lima",
+      "last_name": "Testcase",
+      "dob": "1996-12-27",
+      "ssn": "900-91-5825",
+      "accounts": [
+        {
+          "type": "Checking",
+          "account_no": "195130201",
+          "balance": 2036.25
+        },
+        {
+          "type": "Savings",
+          "account_no": "295130201",
+          "balance": 11486.54
+        }
+      ]
+    },
+    {
+      "member_id": "332250",
+      "first_name": "Mike",
+      "last_name": "Fixture",
+      "dob": "2002-06-26",
+      "ssn": "900-30-1412",
+      "accounts": [
+        {
+          "type": "Checking",
+          "account_no": "133225001",
+          "balance": 1264.4
+        },
+        {
+          "type": "Savings",
+          "account_no": "233225001",
+          "balance": 5209.96
+        }
+      ]
+    },
+    {
+      "member_id": "130108",
+      "first_name": "November",
+      "last_name": "Dummy",
+      "dob": "1956-08-31",
+      "ssn": "900-51-4176",
+      "accounts": [
+        {
+          "type": "Checking",
+          "account_no": "113010801",
+          "balance": 7342.51
+        },
+        {
+          "type": "Savings",
+          "account_no": "213010801",
+          "balance": 18777.32
+        }
+      ]
+    },
+    {
+      "member_id": "910514",
+      "first_name": "Oscar",
+      "last_name": "Mock",
+      "dob": "1965-08-08",
+      "ssn": "900-86-9633",
+      "accounts": [
+        {
+          "type": "Checking",
+          "account_no": "191051401",
+          "balance": 3806.44
+        },
+        {
+          "type": "Savings",
+          "account_no": "291051401",
+          "balance": 3963.67
+        }
+      ]
+    },
+    {
+      "member_id": "947336",
+      "first_name": "Papa",
+      "last_name": "Stub",
+      "dob": "1952-07-17",
+      "ssn": "900-70-7960",
+      "accounts": [
+        {
+          "type": "Checking",
+          "account_no": "194733601",
+          "balance": 1926.78
+        },
+        {
+          "type": "Savings",
+          "account_no": "294733601",
+          "balance": 21074.43
+        }
+      ]
+    },
+    {
+      "member_id": "617203",
+      "first_name": "Quebec",
+      "last_name": "Sample",
+      "dob": "1973-10-27",
+      "ssn": "900-97-8629",
+      "accounts": [
+        {
+          "type": "Checking",
+          "account_no": "161720301",
+          "balance": 8696.48
+        },
+        {
+          "type": "Savings",
+          "account_no": "261720301",
+          "balance": 15775.74
+        }
+      ]
+    },
+    {
+      "member_id": "384931",
+      "first_name": "Romeo",
+      "last_name": "Example",
+      "dob": "1953-05-24",
+      "ssn": "900-79-4388",
+      "accounts": [
+        {
+          "type": "Checking",
+          "account_no": "138493101",
+          "balance": 7686.8
+        },
+        {
+          "type": "Savings",
+          "account_no": "238493101",
+          "balance": 3219.72
+        }
+      ]
+    },
+    {
+      "member_id": "505352",
+      "first_name": "Sierra",
+      "last_name": "Placeholder",
+      "dob": "2004-08-14",
+      "ssn": "900-39-3810",
+      "accounts": [
+        {
+          "type": "Checking",
+          "account_no": "150535201",
+          "balance": 4195.83
+        },
+        {
+          "type": "Savings",
+          "account_no": "250535201",
+          "balance": 1493.86
+        }
+      ]
+    },
+    {
+      "member_id": "490687",
+      "first_name": "Tango",
+      "last_name": "Testcase",
+      "dob": "1980-12-31",
+      "ssn": "900-89-7939",
+      "accounts": [
+        {
+          "type": "Checking",
+          "account_no": "149068701",
+          "balance": 6882.53
+        },
+        {
+          "type": "Savings",
+          "account_no": "249068701",
+          "balance": 16655.89
+        }
+      ]
+    },
+    {
+      "member_id": "694378",
+      "first_name": "Uniform",
+      "last_name": "Fixture",
+      "dob": "1962-02-24",
+      "ssn": "900-77-5343",
+      "accounts": [
+        {
+          "type": "Checking",
+          "account_no": "169437801",
+          "balance": 8558.44
+        },
+        {
+          "type": "Savings",
+          "account_no": "269437801",
+          "balance": 15237.72
+        }
+      ]
+    },
+    {
+      "member_id": "223369",
+      "first_name": "Victor",
+      "last_name": "Dummy",
+      "dob": "1998-04-11",
+      "ssn": "900-80-4695",
+      "accounts": [
+        {
+          "type": "Checking",
+          "account_no": "122336901",
+          "balance": 5326.63
+        },
+        {
+          "type": "Savings",
+          "account_no": "222336901",
+          "balance": 1972.74
+        }
+      ]
+    },
+    {
+      "member_id": "707012",
+      "first_name": "Whiskey",
+      "last_name": "Mock",
+      "dob": "1971-09-03",
+      "ssn": "900-46-2607",
+      "accounts": [
+        {
+          "type": "Checking",
+          "account_no": "170701201",
+          "balance": 5581.29
+        },
+        {
+          "type": "Savings",
+          "account_no": "270701201",
+          "balance": 22185.21
+        }
+      ]
+    },
+    {
+      "member_id": "658662",
+      "first_name": "Xray",
+      "last_name": "Stub",
+      "dob": "1996-08-03",
+      "ssn": "900-18-9522",
+      "accounts": [
+        {
+          "type": "Checking",
+          "account_no": "165866201",
+          "balance": 6677.69
+        },
+        {
+          "type": "Savings",
+          "account_no": "265866201",
+          "balance": 13341.28
+        }
+      ]
+    },
+    {
+      "member_id": "190815",
+      "first_name": "Yankee",
+      "last_name": "Sample",
+      "dob": "1979-01-15",
+      "ssn": "900-56-1076",
+      "accounts": [
+        {
+          "type": "Checking",
+          "account_no": "119081501",
+          "balance": 4838.09
+        },
+        {
+          "type": "Savings",
+          "account_no": "219081501",
+          "balance": 279.32
+        }
+      ]
+    }
+  ]
+}

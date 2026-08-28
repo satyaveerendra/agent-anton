@@ -1,0 +1,24 @@
+{% extends "base.html" %}{% block title %}Member Search — {{ labels.brand }}{% endblock %}
+{% block body %}
+<table class="row" cellpadding="4"><tr><td class="cell"><span style="font-size:16px;font-weight:bold">Member Search</span></td></tr></table>
+<form method="get" action="{{ prefix }}/search">
+<table class="row" cellpadding="4">
+<tr><td class="cell">{{ labels.member_id }}</td><td class="cell"><input type="text" name="member_id" style="width:120px"></td></tr>
+<tr><td class="cell">Last name</td><td class="cell"><input type="text" name="last_name" style="width:160px"></td></tr>
+<tr><td class="cell"></td><td class="cell"><button type="submit">Search</button></td></tr>
+</table></form>
+{% if results is not none %}
+<table class="row" cellpadding="4" border="1" style="border-collapse:collapse;margin-top:10px">
+<tr><td class="cell" style="font-weight:bold">{{ labels.member_id }}</td><td class="cell" style="font-weight:bold">Name</td></tr>
+{% for r in results %}<tr><td class="cell"><a href="{{ prefix }}/member/{{ r.member_id }}">{{ r.member_id }}</a></td><td class="cell">{{ r.first_name }} {{ r.last_name }}</td></tr>{% else %}
+<tr><td class="cell" colspan="2">No members match that last name.</td></tr>{% endfor %}
+</table>
+{% endif %}
+{% endblock %}
+{% block modal %}{% if modal %}
+<div class="ovl"><div class="box">
+<table class="row" cellpadding="4"><tr><td class="cell" style="font-weight:bold">Scheduled maintenance notice</td></tr>
+<tr><td class="cell">The console will be unavailable Sunday 02:00–04:00 for scheduled maintenance.</td></tr>
+<tr><td class="cell" align="right"><button type="button" onclick="this.closest('.ovl').remove()">Dismiss</button></td></tr></table>
+</div></div>
+{% endif %}{% endblock %}

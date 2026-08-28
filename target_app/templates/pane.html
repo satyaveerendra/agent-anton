@@ -1,0 +1,16 @@
+<html><head><title>Member detail pane</title><link rel="stylesheet" href="{{ prefix }}/static/console.css"></head>
+<body class="c1">
+<table class="row" cellpadding="4"><tr><td class="cell" style="font-weight:bold">Profile</td></tr></table>
+<table class="row" cellpadding="4" border="1" style="border-collapse:collapse">
+<tr><td class="cell">Name</td><td class="cell">{{ m.first_name }} {{ m.last_name }}</td></tr>
+<tr><td class="cell">{{ labels.member_id }}</td><td class="cell">{{ m.member_id }}</td></tr>
+<tr><td class="cell">Date of Birth</td><td class="cell">{{ m.dob }}</td></tr>
+<tr><td class="cell">SSN</td><td class="cell">{{ m.ssn }}</td></tr>
+</table>
+<table class="row" cellpadding="4" style="margin-top:10px"><tr><td class="cell" style="font-weight:bold">Accounts</td></tr></table>
+<table class="row" cellpadding="4" border="1" style="border-collapse:collapse">
+<tr>{% for col in columns %}<td class="cell" style="font-weight:bold">{% if col == 'type' %}Type{% elif col == 'account_no' %}Account No.{% else %}Balance{% endif %}</td>{% endfor %}</tr>
+{% for a in accounts %}<tr>{% for col in columns %}<td class="cell">{% if col == 'type' %}{{ a.type }}{% elif col == 'account_no' %}{{ a.account_no }}{% else %}{{ a.balance | money }}{% endif %}</td>{% endfor %}</tr>{% endfor %}
+</table>
+<table class="row" cellpadding="4" style="margin-top:10px"><tr><td class="cell"><a href="{{ prefix }}/member/{{ m.member_id }}/subaccount/new" target="_top">{{ labels.open_subaccount }}</a></td></tr></table>
+</body></html>

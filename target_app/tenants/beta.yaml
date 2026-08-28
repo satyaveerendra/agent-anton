@@ -1,0 +1,8 @@
+tenant_id: beta
+route_prefix: "/portal"
+labels:
+  brand: "Member Servicing Console (Portal)"
+  member_id: "Customer Number"
+  open_subaccount: "Add Product"
+  confirm: "Complete"
+accounts_columns: [account_no, balance, type]

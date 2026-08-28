@@ -2,8 +2,9 @@
 
 ## Status
 - **Step 0 (housekeeping + independent review + spec revision + consistency pass): complete** — 2026-08-28.
-- **Phase 1 — Scaffold + schema: complete** — 2026-08-28. Gate `make verify-0` green (output below).
-- **Phase 2 — Target app: not started.**
+- **Phase 1 — Scaffold + schema: complete** — 2026-08-28. Gate `make verify-0` green.
+- **Phase 2 — Target app: complete** — 2026-08-28. Gate `make verify-target` green (output below); `verify-0` still green.
+- **Phase 3 — Surface + policy: not started.**
 
 ## What exists
 - `SPEC.md` (revised per the accepted Step-0 review; four author pins applied; `schema/loader.py`
@@ -24,7 +25,36 @@
   (ruff + pytest markers), `.env.example`, `tests/` (conftest builders, 109 unit tests).
 - No application code beyond the schema layer; no `runs/` or `evidence/` content; no secrets.
 
-## Verify results (phase 1, pasted from this session's terminal)
+## What exists (phase 2)
+- `target_app/`: `app.py` (Flask factory `create_app(tenant, inject, slow_ms, debug_state)`; blueprint under the
+  tenant `route_prefix`; static under the prefix too; login guard with `302 /login?next=`; `?next=` carried through
+  the POST; `expire`/`modal` once, `slow` every shell GET, `deny` sticky on the confirm POST, `err500` sticky on
+  `GET …/subaccount/new`; `?inject=` arms process-wide; in-memory sub-accounts; `/__state/member/<id>` only under
+  `ANTON_TARGET_DEBUG=1` / `--debug-state`), `seed.py` (25 fake members, canonical 204817 + 310552, ISO DOB,
+  900-XX-XXXX SSNs, JSON-number balances) + committed `data.json`, hostile-markup templates (nested tables,
+  `c1/row/cell`, inline styles, no ids/test-ids, `<iframe name="detail">` pane, DOM-only modal with "Dismiss"),
+  `tenants/alpha.yaml` + `beta.yaml` (labels, column order, `/portal`).
+- `anton target serve [--tenant] [--inject …] [--slow-ms] [--port] [--host] [--debug-state]`; `make target`.
+- `tests/acceptance/conftest.py`: spawns the real CLI on a free port, cookie-jar client that never follows
+  redirects, per-target log file, `Target.cli_env()` with the §19 exports for phase-4 CLI runs.
+- `tests/acceptance/test_verify_target.py` (15 tests) = `make verify-target`; acceptance tests carry the
+  `acceptance` marker and are excluded from `verify-0` (decisions P2-1).
+- Phase-2 audit (2 agents) found no blockers; every FIX applied (decisions P2-6 revert, P2-11..P2-14).
+
+## Verify results (phase 2, pasted from this session's terminal)
+```
+$ make verify-target
+.venv/bin/python -m pytest -q -m acceptance tests/acceptance/test_verify_target.py
+...............                                                          [100%]
+15 passed in 4.02s
+$ make verify-0
+.venv/bin/python -m ruff check .
+All checks passed!
+.venv/bin/python -m pytest -q -m "not integration and not acceptance"
+109 passed, 15 deselected in 2.12s
+```
+
+## Verify results (phase 1, pasted from that session's terminal)
 ```
 $ make verify-0
 .venv/bin/python -m ruff check .
@@ -49,10 +79,19 @@ every FIX item was applied (decisions P1-11..P1-15) and re-verified above.
   (author decision at polish time; nothing before then depends on their location).
 
 ## Next actions
-1. Author reviews phase-1 output (`git show --stat HEAD`, `make verify-0`) and says "start phase 2".
-2. Phase 2 session: re-read SPEC §17 phase 2 and every section it references from the file —
-   §6 (pages, pinned labels, "Sign out" landmark, 302/`?next=`, `novalidate` form, in-memory
-   sub-accounts + `/__state` under `ANTON_TARGET_DEBUG=1`, injection table, tenant variants, seed with
-   canonical ids 204817/310552, ISO DOB), §13 (`target serve --tenant/--inject`), §19 `verify-target`
-   contents; build `target_app/` (Flask, hostile markup, iframe pane), `seed.py`, `tenants/*.yaml`,
-   the `verify-target` curl script + Makefile target; run `make verify-target`, paste output, commit.
+1. Author reviews phase-2 output (`git show --stat HEAD`, `make verify-target`, `make target` + browse
+   http://127.0.0.1:8000/login with ops_user / demo-pass-1) and says "start phase 3".
+2. Phase 3 session (budget 2 sessions): re-read SPEC §17 phase 3 and every section it references from
+   the file — §7 (SemanticSnapshot builder: injected JS per frame, roles from tag/type/ARIA, name from
+   label/aria-label/nearest text, static text blocks + table cells, recursive iframe visibility, top-page
+   bboxes, `frame_path` format; ladder walk in `replay/locate.py` with per-tier fingerprints and
+   `Surface.resolve(candidate)` for ONE candidate; `read()`; action timeout = step budget; dialog handler;
+   masks via injected overlays, fail closed), §8 (ActionGate single choke point, Deny reasons incl.
+   `LEASE_NOT_HELD`/`DRAFT_RISKY`/`POST_NAV_OFFLIST`/`SECRET_LITERAL`, effective risk, `LeaseState` +
+   `ApprovalToken` in `policy/gate.py`, Redactor at every sink with anchor/form-control exemptions,
+   `SecretRef` → `ANTON_SECRET_<NAME>`), §16 (gate / redaction / ladder / surface-integration / lease
+   bullets), §19 gates (`verify-0` + `verify-surface`). Run `playwright install chromium` first.
+   Markup notes for the ladder walk (from the phase-2 audit): headings are bold `<span>`s inside `<td>`,
+   the accounts header row uses `<td>` (identify headers by first-row text), labels are sibling cells with
+   no `<label for>` — name derivation must prefer the preceding label cell; `/logout` is deliberately
+   outside the allowlist (P2-12). Gate: `make verify-0` + `make verify-surface`, paste output, commit.

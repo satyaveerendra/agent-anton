@@ -17,5 +17,6 @@ ignore = ["E501"]
 testpaths = ["tests"]
 markers = [
   "integration: needs Playwright/Chromium (run with `make verify-surface`)",
+  "acceptance: spawns the real target app / drives the real CLI (verify-target, verify-N)",
 ]
 addopts = "-ra"

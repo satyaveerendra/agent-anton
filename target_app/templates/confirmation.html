@@ -1,0 +1,12 @@
+{% extends "base.html" %}{% block title %}Sub-account opened — {{ labels.brand }}{% endblock %}
+{% block body %}
+<table class="row" cellpadding="4"><tr><td class="cell"><span style="font-size:16px;font-weight:bold">Sub-account opened</span></td></tr></table>
+<table class="row" cellpadding="4" border="1" style="border-collapse:collapse">
+<tr><td class="cell">Member</td><td class="cell">{{ m.member_id }}</td></tr>
+<tr><td class="cell">Account Number</td><td class="cell">{{ acct.account_no }}</td></tr>
+<tr><td class="cell">Type</td><td class="cell">{{ acct.type }}</td></tr>
+<tr><td class="cell">Nickname</td><td class="cell">{{ acct.nickname }}</td></tr>
+<tr><td class="cell">Opening balance</td><td class="cell">{{ acct.balance | money }}</td></tr>
+</table>
+<table class="row" cellpadding="4"><tr><td class="cell"><a href="{{ prefix }}/member/{{ m.member_id }}">Back to member</a></td></tr></table>
+{% endblock %}
