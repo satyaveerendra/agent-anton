@@ -1,0 +1,27 @@
+{
+  "run_id": "20260828T223808Z-d29d10",
+  "capability_id": "servicing.open_subaccount",
+  "version": "1.0.0",
+  "tenant_id": "alpha",
+  "overlay_id": null,
+  "artifact_sha256": "935b5212e844d48e81e7759c058e1d7d77077f31276f7badb64dc290e1e5d45f",
+  "status": "FAILED",
+  "outputs": null,
+  "outcome_code": null,
+  "outcome_step_id": null,
+  "outcome_detector_id": null,
+  "outcome_detail": null,
+  "failure": {
+    "kind": "POLICY_VIOLATION",
+    "step_id": "click_confirm_and_open_account",
+    "expected": null,
+    "observed_summary": "DRAFT_RISKY: draft artifact declares RISKY step 'click_confirm_and_open_account'; approve it first",
+    "evidence": []
+  },
+  "blocked": null,
+  "steps": [],
+  "interventions": [],
+  "started_at": "2026-08-28T22:38:08.859759Z",
+  "finished_at": "2026-08-28T22:38:08.860229Z",
+  "redacted_view": true
+}

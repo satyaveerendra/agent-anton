@@ -4,7 +4,7 @@ UNIT = -m pytest -q -m "not integration and not acceptance"
 
 .PHONY: test verify-0 verify-surface verify-target target discover discover-subaccount replay replay-notfound \
         verify-1 verify-1b verify-2 verify-3 verify-4 verify-5a verify-5b verify-6 verify-7 \
-        verify-evidence verify-all approve demo-discovery-approval demo-discovery-approval-auto replay-beta
+        verify-evidence verify-all approve demo-discovery-approval demo-discovery-approval-auto replay-beta curate-evidence
 ACC = -m pytest -q -m acceptance tests/acceptance/test_aw_replay.py
 
 test:
@@ -85,9 +85,26 @@ endif
 replay-beta:         ## replay the alpha-recorded balance artifact on tenant beta through the overlay
 	$(PY) -m anton replay artifacts/read_savings_balance.json --param member_id=$${MEMBER:-204817} --overlay overlays/beta.yaml
 
-# --- available from later phases (SPEC §17); each fails loudly until its phase lands ---
-define not_yet
-	@echo "$(1): not built until $(2) (SPEC §17)"; exit 1
-endef
-verify-evidence: ; $(call not_yet,verify-evidence,phase 8)
-verify-all:      ; $(call not_yet,verify-all,phase 8)
+# --- phase 8: evidence + the whole gate -----------------------------------------------------
+verify-evidence:     ## every seeded SSN/DOB, the demo password and the key prefix are absent from evidence/, artifacts/, runs/
+	$(PY) -m anton.evidence.verify
+
+curate-evidence:     ## copy the newest run matching each AW into evidence/<folder>/ and refresh INDEX.md (run after the AW targets)
+	$(PY) -m anton.evidence.curate
+
+verify-all:          ## SPEC §19: every non-cut target; then reminders for the human gates
+	$(MAKE) verify-0
+	$(MAKE) verify-surface
+	$(MAKE) verify-1
+	$(MAKE) verify-1b
+	$(MAKE) verify-2
+	$(MAKE) verify-3
+	$(MAKE) verify-4
+	$(MAKE) verify-5a
+	$(MAKE) verify-6
+	$(MAKE) verify-7
+	$(MAKE) verify-evidence
+	@echo ""
+	@echo "verify-all: every non-cut automated target is green."
+	@echo "REMINDER  AW-5b (human, definition of done): make verify-5b — take control, click Confirm in the live window, hand back."
+	@echo "REMINDER  discovery gate (human, SPEC §19): check evidence/discovery-run* + evidence/artifact/* per docs/progress.md, and make demo-discovery-approval."

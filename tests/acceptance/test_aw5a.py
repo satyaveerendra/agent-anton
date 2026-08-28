@@ -18,6 +18,16 @@ from anton.schema.artifact import CapabilityArtifact, RiskClass
 from anton.schema.loader import repo_root
 from tests.acceptance.conftest import Target, free_port
 
+RUNS = repo_root() / "runs"
+
+
+def run_dir_for(name: str) -> Path:
+    """Under runs/ (gitignored) like every other run, so `make curate-evidence` can find it."""
+    import secrets
+    from datetime import UTC, datetime
+
+    return RUNS / f"{datetime.now(UTC).strftime('%Y%m%dT%H%M%SZ')}-5a{name}{secrets.token_hex(2)}"
+
 pytestmark = pytest.mark.acceptance
 
 ART_DIR = os.environ.get("ANTON_ARTIFACT_DIR", "artifacts")
@@ -70,7 +80,7 @@ def finish(proc: subprocess.Popen, timeout: float = 120) -> tuple[int, dict, str
 
 def test_aw5a_park_take_abort(alpha: Target, tmp_path: Path) -> None:
     port = free_port()
-    run_dir = tmp_path / "run"
+    run_dir = run_dir_for("abort")
     proc = start_parked_replay(alpha, run_dir, port, 60)
     try:
         def read_request():  # noqa: ANN202
@@ -111,7 +121,7 @@ def api_safe(port: int) -> tuple[int, dict]:
 
 def test_aw5a_timeout_without_operator(alpha: Target, tmp_path: Path) -> None:
     port = free_port()
-    run_dir = tmp_path / "run"
+    run_dir = run_dir_for("timeout")
     proc = start_parked_replay(alpha, run_dir, port, 5)
     try:
         rc, result, err = finish(proc, timeout=90)
@@ -126,7 +136,7 @@ def test_aw5a_timeout_without_operator(alpha: Target, tmp_path: Path) -> None:
 
 def test_aw5a_deny(alpha: Target, tmp_path: Path) -> None:
     port = free_port()
-    run_dir = tmp_path / "run"
+    run_dir = run_dir_for("deny")
     proc = start_parked_replay(alpha, run_dir, port, 60)
     try:
         wait_for(lambda: (run_dir / "intervention.json").exists(), 30, "intervention.json")

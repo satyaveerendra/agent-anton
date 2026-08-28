@@ -1,0 +1,43 @@
+{
+  "url": "http://127.0.0.1:53533/member/204817/subaccount/new",
+  "title": "500 Internal Server Error",
+  "frame_count": 1,
+  "elements": [
+    {
+      "ref": "e1",
+      "role": "heading",
+      "name": "Internal Server Error",
+      "text": "Internal Server Error",
+      "control_type": "h1",
+      "frame_path": [],
+      "bbox": {
+        "x": 8.0,
+        "y": 8.0,
+        "w": 1264.0,
+        "h": 39.0
+      },
+      "enabled": true,
+      "visible": true,
+      "value": null,
+      "checked": null
+    },
+    {
+      "ref": "e2",
+      "role": "text",
+      "name": "The server encountered an internal error and was unable to complete your request.",
+      "text": "The server encountered an internal error and was unable to complete your request.",
+      "control_type": "p",
+      "frame_path": [],
+      "bbox": {
+        "x": 8.0,
+        "y": 68.4375,
+        "w": 1264.0,
+        "h": 19.0
+      },
+      "enabled": true,
+      "visible": true,
+      "value": null,
+      "checked": null
+    }
+  ]
+}

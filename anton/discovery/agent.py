@@ -27,6 +27,7 @@ from pathlib import Path
 from typing import Any
 
 from anton.discovery.describe import describe
+from anton.discovery.prompts import TOOLS, system_prompt
 from anton.distill.distiller import DistillContext, DistillError, RecordedTurn, distill
 from anton.evidence.log import RunLog
 from anton.policy.gate import ActionGate, Allow, Deny, DenyReason, NeedsApproval, PolicyConfig, resolve_secret
@@ -68,47 +69,6 @@ __all__ = ["DEFAULT_MODEL", "DiscoverOptions", "Discovery", "discovery_bundle", 
 DEFAULT_MODEL = "claude-sonnet-5"
 DIGEST_LIMIT = 60
 ACT_TIMEOUT_MS = 8000
-
-TOOLS: list[dict[str, Any]] = [
-    {
-        "name": "act",
-        "description": "Perform ONE UI action. CLICK/FILL/SELECT/PRESS on a digest element need its ref; NAVIGATE (value = URL) and a global PRESS (value = key name) use ref = null. FILL/SELECT values may be a literal, \"$param:<name>\" for a declared param, or \"$secret:<name>\".",
-        "input_schema": {
-            "type": "object",
-            "properties": {
-                "ref": {"type": ["string", "null"], "description": "element ref from THIS turn's digest, e.g. \"e12\"; null only for NAVIGATE / global PRESS"},
-                "action": {"type": "string", "enum": ["CLICK", "FILL", "SELECT", "PRESS", "NAVIGATE"]},
-                "value": {"type": ["string", "null"], "description": "text to type / option label to select / key name / URL"},
-                "rationale": {"type": "string", "description": "one sentence: why this action moves toward the goal"},
-            },
-            "required": ["ref", "action", "rationale"],
-        },
-    },
-    {
-        "name": "read",
-        "description": "Return the (redacted) text of one element of THIS turn's digest. Use it to confirm a value before finishing.",
-        "input_schema": {"type": "object", "properties": {"ref": {"type": "string"}, "rationale": {"type": "string"}}, "required": ["ref", "rationale"]},
-    },
-    {
-        "name": "finish",
-        "description": "Declare the goal reached. For EVERY declared output give the ref of the element whose text IS that value (for a table: the cell in the right row AND column). The harness reads the value itself — never transcribe it.",
-        "input_schema": {
-            "type": "object",
-            "properties": {"outputs": {"type": "object", "additionalProperties": {"type": "string"}, "description": "{output name: ref}"}, "rationale": {"type": "string"}},
-            "required": ["outputs", "rationale"],
-        },
-    },
-    {
-        "name": "give_up",
-        "description": "Stop: the goal cannot be reached from here (explain why).",
-        "input_schema": {"type": "object", "properties": {"reason": {"type": "string"}}, "required": ["reason"]},
-    },
-    {
-        "name": "ask_human",
-        "description": "Ask a human operator to take over (only useful when the system prompt says a human is available).",
-        "input_schema": {"type": "object", "properties": {"reason": {"type": "string"}}, "required": ["reason"]},
-    },
-]
 
 INTERACTIVE = ("button", "link", "textbox", "checkbox", "radio", "combobox")
 
@@ -258,24 +218,7 @@ class Discovery:
             f.write(json.dumps(self.redactor.scrub(json.loads(json.dumps(obj, default=str)))) + "\n")
 
     def _system(self) -> str:
-        o = self.opts
-        parts = []
-        for p in o.spec.inputs:
-            shown_value = f'(sensitive; type "$param:{p.name}")' if p.sensitive else str(o.params.get(p.name, ""))
-            parts.append(f"{p.name}={shown_value} — {p.description}")
-        shown = ", ".join(parts)
-        outs = "; ".join(f"{d.name} ({d.type.value}): {d.description}" for d in o.spec.outputs)
-        human = "A human operator IS available via ask_human." if o.escalate else "NO human is available: ask_human is treated as give_up."
-        return (
-            "You operate a legacy back-office web console through a strict harness. You are ALREADY authenticated and "
-            f"standing on the entry page.\nGOAL: {o.goal}\n"
-            f"Declared params: {shown}\nDeclared outputs you must cite in finish: {outs}\n"
-            "Each turn you receive a digest of the visible elements (refs like e12 are valid ONLY for that turn) and a masked "
-            "screenshot. Call exactly ONE tool per turn. Type \"$param:<name>\" as the FILL value for a declared param. "
-            "Use read to confirm a cell's text before finishing. When every declared output's value is visible, call finish "
-            f"citing the ref of the element whose text IS the value. Never transcribe values. {human} "
-            "If the goal is impossible, call give_up with the reason."
-        )
+        return system_prompt(self.opts.goal, self.opts.spec, self.opts.params, human_available=self.opts.escalate)
 
     def _default_surface(self, run_dir: Path, redactor: Redactor, log: RunLog) -> tuple[Surface, Callable[[], None]]:
         from anton.surface.web import PlaywrightSurface

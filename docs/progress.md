@@ -9,7 +9,23 @@
 - **Phase 5 — Discovery + distiller: complete** — 2026-08-28 (1 session, on budget). Real discovery runs with `claude-sonnet-5`: balance goal (3 turns) and sub-account goal with `--approve-risky` (10 turns); both distilled → `inspect` → `approve`; the distilled artifacts re-pass AW-1, 1b, 2, 3, 4 and 7 **unmodified** (output below). Discovery gate: evidence curated (`evidence/INDEX.md`); the human-verified checks are listed under "Next actions" for the author. Three bounded audits (loop/distiller vs §10, tests vs §16/§19, security of the discovery path) found no design blockers; every FIX applied (P5-14..P5-23), runs regenerated with the final code.
 - **Phase 6 — Escalation: complete** — 2026-08-28 (1 of its 2-session budget). `make verify-5a` green; two bounded audits (one blocker, P6-11, and every FIX applied); the round-trip mechanics automated (`tests/integration/test_escalation_roundtrip.py`); **AW-5b run by the author: PASS** (`evidence/escalation-demo/`); **discovery approval demo run by the author: PASS** (`evidence/escalation-demo-discovery/`).
 - **Phase 7 — Tenant overlay: complete** — 2026-08-28 (1 session, NOT cut). `make verify-6` green (no-overlay leg fails at `__preconditions__`; overlay leg SUCCESS with the same balance, tier ≤ 2, `source == "overlay"`, masks resolved; "Complete" stays RISKY on beta); one bounded audit, no blockers, every FIX applied (P7-6, P7-7). `evidence/replay-tenant-beta/` curated from the final code.
-- **Phase 8 — Polish: not started.**
+- **Phase 8 — Polish: complete** — 2026-08-28 (1 session). `make verify-all` green (pasted below); `evidence/` holds every §12 folder (2 discovery runs, 2 escalation demos, 14 replay folders) curated from runs of the final code; README + REPORT skeleton written; §3 layout exact.
+
+## What exists (phase 8)
+- `anton/evidence/verify.py` (`make verify-evidence`), `anton/evidence/curate.py` (`make curate-evidence`), `make verify-all`; `anton/replay/outcomes.py`, `anton/discovery/prompts.py` (layout split); `README.md` (§14), `REPORT.md` (§15 skeleton, author-owned prose); `evidence/INDEX.md` with every folder mapped to its AW/gate.
+
+## Verify results (phase 8, pasted from this session's terminal)
+```
+$ make verify-all
+verify-0        All checks passed!  193 passed, 50 deselected
+verify-surface  17 passed
+verify-1 1 · verify-1b 1 · verify-2 1 · verify-3 3 · verify-4 1 · verify-5a 3 · verify-6 3 · verify-7 5 passed
+verify-evidence: OK — 52 needles (seeded SSNs + DOBs, demo password, key prefix) absent from evidence, artifacts, runs/
+verify-all: every non-cut automated target is green.
+REMINDER  AW-5b (human, definition of done): make verify-5b — …      ← run by the author 2026-08-28: PASS (evidence/escalation-demo/)
+REMINDER  discovery gate (human, SPEC §19): …                         ← evidence/discovery-run*, evidence/artifact/*, demo PASS (evidence/escalation-demo-discovery/)
+$ make curate-evidence   14 folders refreshed; evidence/INDEX.md updated      $ make verify-evidence   OK (after curation)
+```
 
 ## What exists (phase 7)
 - `overlays/beta.yaml` (read_savings_balance → beta: entry `/portal/search`, prefix, `fill_member_id` → "Customer Number") and `overlays/beta.open_subaccount.yaml` (+ "Add Product", "Complete"); `tests/acceptance/test_aw6.py` (AW-6 both legs + the §6 "Complete stays RISKY" companion); Makefile `verify-6` with the `^- P7-CUT ·` / `ANTON_PHASE7_CUT=1` rule and `replay-beta`; `tests/unit/test_loader.py` loads the real overlays against the real artifacts.
@@ -202,6 +218,9 @@ every FIX item was applied (decisions P1-11..P1-15) and re-verified above.
 - Whether `SPEC.md` and `CLAUDE.md` remain in the public repo root or move under `docs/`
   (author decision at polish time; nothing before then depends on their location).
 
-## Next actions
-1. Author reviews phase-7 output (`git show --stat HEAD`, `evidence/replay-tenant-beta/`, decisions P7-1..P7-5) and says "start phase 8".
-2. Phase 8 (polish, 1 session): re-read SPEC §17 phase 8, §12 (curate the remaining replay evidence folders from `runs/`, `evidence/INDEX.md`), §19 `verify-evidence` (the sensitive-value scan over evidence/, artifacts/, runs/ — never `.env*`) and `verify-all` (every non-cut target + reminders for AW-5b and the discovery gate), §14/§15 (README demo path, REPORT), §18/§20; decide SPEC/CLAUDE location (deferred item); `make verify-all` green is the definition of done.
+## Next actions (the author's)
+1. Write REPORT.md — every `[AUTHOR: …]` bullet is a prompt seeded with the decision actually taken (docs/decisions.md has the one-liners); §15 forbids me from writing the prose.
+2. Re-confirm the human gates on the final code if desired: `make verify-5b`, `make demo-discovery-approval` (both passed on 2026-08-28 on code that has since only changed in the console layout, the recorder's console-click filter, the run-dir path in run.jsonl and the phase-8 split of outcomes.py/prompts.py).
+3. Decide the open vetoes: A1 (operator Deny ⇒ BLOCKED(APPROVAL_DENIED) — implemented), A12 (`row_anchor_col_header`), A13 (`SECRET_TARGET`); and the SPEC/CLAUDE location (P8-6 keeps them in the root).
+4. Rotate the API key that was pasted into chat (P4-29); `.env` is gitignored.
+5. `git log` is the phase history; `make verify-all` is the definition of done — run it once more before submitting.

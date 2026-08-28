@@ -1,0 +1,106 @@
+{
+  "run_id": "20260828T223722Z-84ff05",
+  "capability_id": "servicing.open_subaccount",
+  "version": "1.0.0",
+  "tenant_id": "alpha",
+  "overlay_id": null,
+  "artifact_sha256": "935b5212e844d48e81e7759c058e1d7d77077f31276f7badb64dc290e1e5d45f",
+  "status": "FAILED",
+  "outputs": null,
+  "outcome_code": null,
+  "outcome_step_id": null,
+  "outcome_detector_id": null,
+  "outcome_detail": null,
+  "failure": {
+    "kind": "APP_ERROR",
+    "step_id": "click_open_sub_account",
+    "expected": {
+      "all_of": [
+        {
+          "kind": "url_matches",
+          "regex": "^/member/[^/]+/subaccount/new$"
+        },
+        {
+          "kind": "title_matches",
+          "regex": "New sub-account"
+        }
+      ]
+    },
+    "observed_summary": "app_error: application error page (HTTP 500); url=/member/204817/subaccount/new title='500 Internal Server Error' visible=['Internal Server Error', 'The server encountered an internal error and was unable to complete your request.']",
+    "evidence": [
+      "screenshots/shot-001.png",
+      "snapshot-click_open_sub_account-1.json"
+    ]
+  },
+  "blocked": null,
+  "steps": [
+    {
+      "step_id": "__preconditions__",
+      "status": "PASSED",
+      "attempts": 1,
+      "duration_ms": 550,
+      "resolution": null,
+      "drift_flag": false,
+      "recoveries": [],
+      "detectors_fired": [],
+      "evidence": []
+    },
+    {
+      "step_id": "fill_member_id",
+      "status": "PASSED",
+      "attempts": 1,
+      "duration_ms": 42,
+      "resolution": {
+        "tier": 1,
+        "candidate_index": 0,
+        "source": "artifact",
+        "fingerprint_ok": true
+      },
+      "drift_flag": false,
+      "recoveries": [],
+      "detectors_fired": [],
+      "evidence": []
+    },
+    {
+      "step_id": "click_search",
+      "status": "PASSED",
+      "attempts": 1,
+      "duration_ms": 309,
+      "resolution": {
+        "tier": 1,
+        "candidate_index": 0,
+        "source": "artifact",
+        "fingerprint_ok": true
+      },
+      "drift_flag": false,
+      "recoveries": [],
+      "detectors_fired": [],
+      "evidence": []
+    },
+    {
+      "step_id": "click_open_sub_account",
+      "status": "FAILED",
+      "attempts": 1,
+      "duration_ms": 406,
+      "resolution": {
+        "tier": 1,
+        "candidate_index": 0,
+        "source": "artifact",
+        "fingerprint_ok": true
+      },
+      "drift_flag": false,
+      "recoveries": [],
+      "detectors_fired": [
+        "app_error"
+      ],
+      "evidence": [
+        "screenshots/shot-001.png",
+        "snapshot-click_open_sub_account-1.json"
+      ]
+    }
+  ],
+  "interventions": [],
+  "started_at": "2026-08-28T22:37:22.046069Z",
+  "finished_at": "2026-08-28T22:37:24.015723Z",
+  "redacted_view": true
+}

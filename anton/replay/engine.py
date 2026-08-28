@@ -35,6 +35,7 @@ from anton.policy.gate import (
 )
 from anton.policy.redact import Redactor
 from anton.replay.locate import WalkResult, resolve_ladder_until, resume_point, walk_ladder
+from anton.replay.outcomes import first_hit, recoverable
 from anton.replay.predicates import Evaluator
 from anton.schema.artifact import (
     ActionType,
@@ -352,15 +353,10 @@ class ReplayEngine:
     # --- detectors -----------------------------------------------------------------------------------------
 
     def _first_hit(self, detectors: list[OutcomeDetector], snap: SemanticSnapshot, suppress: set[str]) -> OutcomeDetector | None:
-        for d in detectors:
-            if d.id in suppress:
-                continue
-            if self.ev.any_holds(d.when, snap):
-                return d
-        return None
+        return first_hit(detectors, self.ev, snap, suppress)
 
     def _global_recoverable(self) -> list[OutcomeDetector]:
-        return [d for d in self.profile.global_detectors if isinstance(d, RecoverableDetector)]
+        return recoverable(self.profile.global_detectors)
 
     def _detail(self, det: BusinessDetector) -> str | None:
         if det.detail_locator is None:
