@@ -320,6 +320,9 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def main(argv: list[str] | None = None) -> int:
+    from anton.env import load_dotenv
+
+    load_dotenv()  # gitignored local .env; real environment variables always win
     raw = list(sys.argv[1:] if argv is None else argv)
     if raw and raw[0] in NOT_YET:
         print(f"anton {raw[0]}: not available until {NOT_YET[raw[0]]} (SPEC §17)", file=sys.stderr)

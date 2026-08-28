@@ -9,7 +9,7 @@ directory carries ``turns.jsonl`` (one ``TurnRecord`` per turn) + ``transcript.j
 request/response payloads). Model id from ``ANTON_MODEL`` (default ``claude-sonnet-5``); adaptive
 thinking; no ``budget_tokens``, no prefill (SPEC §2).
 
-Run:  ANTHROPIC_API_KEY=… python -m anton.discovery.agent --url http://127.0.0.1:8000 --param member_id=204817
+Run:  python -m anton.discovery.agent --url http://127.0.0.1:8000 --param member_id=204817   (key from env or .env)
 """
 
 from __future__ import annotations
@@ -329,6 +329,9 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--output", action="append", default=["savings_balance=Current balance of the member's Savings account (NUMBER, dollars)"], metavar="NAME=DESCRIPTION")
     ap.add_argument("--bundle", default="artifacts/read_savings_balance.json", help="artifact whose profile/policy/entry URL the spike borrows (its steps are NOT used)")
     args = ap.parse_args(argv)
+    from anton.env import load_dotenv
+
+    load_dotenv()
     if not os.environ.get("ANTHROPIC_API_KEY"):
         print("discovery spike skipped: ANTHROPIC_API_KEY is not set (SPEC §17 phase 4)", file=sys.stderr)
         return 2
