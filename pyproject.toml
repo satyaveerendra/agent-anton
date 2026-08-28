@@ -1,0 +1,21 @@
+[project]
+name = "anton"
+version = "0.1.0"
+description = "Computer-use automation: discover once with an LLM, replay deterministically."
+requires-python = ">=3.11"
+
+[tool.ruff]
+line-length = 110
+target-version = "py311"
+exclude = [".venv", "runs", "evidence"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "W"]
+ignore = ["E501"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = [
+  "integration: needs Playwright/Chromium (run with `make verify-surface`)",
+]
+addopts = "-ra"

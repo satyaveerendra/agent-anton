@@ -90,6 +90,7 @@ app process. Small, correct, well-argued.
                             # InterventionRequest, InterventionRecord, DiscoveryResult
     app_profile.py          # AppProfile, MaskSpec, TenantOverlay, StepOverride
     snapshot.py             # BBox, SemanticSnapshot, SnapshotElement, ElementDescriptor, TurnRecord (serialized)
+    loader.py               # the §4 loader rules (closure, forbidden extraction, approval, schema major, profile ⊆ policy), overlay application
   surface/
     base.py                 # Surface protocol: observe() / act() / read() / screenshot() / resolve();
                             # ConcreteAction, ResolvedElement, ActError
@@ -873,7 +874,8 @@ class ElementDescriptor(BaseModel):          # the same shape the human-action r
     row_anchor: str | None; col_header: str | None   # when the element sat in a table with a header row
 class TurnRecord(BaseModel):
     turn: int; digest_path: str; screenshot_path: str; rationale: str
-    tool: str; args: dict[str, str]; gate_decision: str
+    tool: str; args: dict[str, str | None | dict[str, str]]   # finish carries {"outputs": {name: ref}}; act carries ref=None for NAVIGATE/global PRESS
+    gate_decision: str
     executed: ElementDescriptor | None; action: ActionType | None; value_ref: ValueRef | None
     page_signature_after: str
 ```
@@ -1069,12 +1071,12 @@ fills `Approval.approved_by` (default `$USER`); the table lists discover/replay 
 
 A second capability for the risky/approval path: goal "open a new savings sub-account
 with a $50 initial deposit for member 204817 and reach the confirmation screen"; params
-`member_id`, `initial_deposit` (NUMBER), `nickname`; output `account_number`. In both
-`specs/read_savings_balance.yaml` and `specs/open_subaccount.yaml`, `member_id` is
-`STRING` with `pattern: "^[0-9]+$"` (AW-1b's exit-2 leg depends on it).
+`member_id`, `initial_deposit` (NUMBER), `nickname`; output `account_number`
 (`sensitive: true` — an account identifier). `savings_balance` on the first capability is
 deliberately `sensitive: false` (a synthetic demo value that must be readable in
-evidence); one line in `docs/decisions.md` says why.
+evidence); one line in `docs/decisions.md` says why. In both
+`specs/read_savings_balance.yaml` and `specs/open_subaccount.yaml`, `member_id` is
+`STRING` with `pattern: "^[0-9]+$"` (AW-1b's exit-2 leg depends on it).
 
 ## 14. README.md (write it, keep it tight)
 

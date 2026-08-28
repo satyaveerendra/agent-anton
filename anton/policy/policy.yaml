@@ -1,0 +1,31 @@
+# Default policy (SPEC §8). String values support ${ENV} / ${ENV:-default} expansion.
+allowed_origins: ["${ANTON_TARGET_ORIGIN:-http://localhost:8000}"]
+# glob semantics: "*" matches exactly one path segment, "**" any depth (fnmatch on segments)
+allowed_url_patterns:
+  - "/login"
+  - "/search"
+  - "/member/**"
+  - "/portal/login"
+  - "/portal/search"
+  - "/portal/member/**"
+allowed_actions: [NAVIGATE, CLICK, FILL, SELECT, PRESS, READ]
+risky_rules:            # matched => RiskClass.RISKY (effective risk = max(policy, step.risk))
+  - actions: [CLICK, PRESS]
+    url_matches: ".*/subaccount/review$"        # any commit on the review page is irreversible (label-independent)
+  - actions: [CLICK]
+    name_matches: "(?i)^(confirm|complete|open account).*"
+    url_matches: ".*/subaccount.*"
+redact_field_patterns:
+  - "(?i)ssn"
+  - "(?i)social security"
+  - "(?i)pass"
+  - "(?i)token"
+  - "(?i)secret"
+  - "(?i)dob"
+  - "(?i)date of birth"
+  - "(?i)account n(o\\b|umber)"
+redact_value_patterns:
+  - "\\b\\d{3}-\\d{2}-\\d{4}\\b"
+forbidden_extract_patterns:   # no artifact may declare an output extracted from these
+  - "(?i)ssn"
+  - "(?i)social security"
