@@ -70,7 +70,7 @@ def main() -> int:
     raw = json.loads(outputs.read_text(encoding="utf-8")) if outputs.exists() else {}
     acct = raw.get("account_number")
     checks.append(("outputs file account_number matches /__state", bool(acct) and any(str(a.get("account_no")) == acct for a in after["accounts"] + after["runtime_created"]) and len(after["accounts"]) == len(before["accounts"]) + 1))
-    checks.append(("stdout shows *** for account_number", bool(result) and result.get("outputs", {}).get("account_number") == "***"))
+    checks.append(("stdout shows *** for account_number", bool(result) and (result.get("outputs") or {}).get("account_number") == "***"))
     iv = (result or {}).get("interventions") or [{}]
     checks.append(("interventions[0].kind == APPROVAL", iv[0].get("kind") == "APPROVAL"))
     checks.append(("resolution == resumed", iv[0].get("resolution") == "resumed"))

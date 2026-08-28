@@ -145,6 +145,10 @@ def test_controller_wait_resolves_by_transition_and_by_timeout(tmp_path: Path) -
     ctl2 = make_controller(tmp_path / "b", timeout_s=5)
     ctl2.record_binding({"frame": None}, {"event": "click", "name": "Confirm"})  # disarmed: dropped
     assert ctl2.human_action_count == 0
+    ctl2.recorder_armed = True
+    ctl2.record_binding({"frame": None}, {"event": "click", "name": "Hand back", "url": ctl2.console_url + "/"})  # a console click is never an app action
+    assert ctl2.human_action_count == 0
+    ctl2.recorder_armed = False
 
     def operator() -> None:
         time.sleep(0.3)

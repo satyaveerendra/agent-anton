@@ -1,0 +1,28 @@
+{
+  "run_id": "20260828T220916Z-b2e673",
+  "goal": "Open a new savings sub-account with a $50 initial deposit for member 204817 and reach the confirmation screen",
+  "status": "SUCCESS",
+  "failure_kind": null,
+  "blocked": null,
+  "artifact_path": "/var/folders/0_/klby6m_54mz8glc2k53kh3mr0000gn/T/anton-demo-qe1fz2v1/artifacts/open_subaccount.json",
+  "turns": 9,
+  "reason": null,
+  "interventions": [
+    {
+      "request_id": "20260828T220916Z-b2e673-i1",
+      "kind": "APPROVAL",
+      "at_step": "turn8",
+      "reason": "RISKY action needs operator approval: RISKY (policy rule 1); no consent for this invocation",
+      "requested_at": "2026-08-28T22:09:45.436331Z",
+      "control_taken_at": null,
+      "handed_back_at": null,
+      "resolved_at": "2026-08-28T22:12:06.456828Z",
+      "resolution": "approved",
+      "human_action_count": 0,
+      "human_actions_path": null,
+      "resumed_at_step": null
+    }
+  ],
+  "started_at": "2026-08-28T22:09:16.067484Z",
+  "finished_at": "2026-08-28T22:12:11.548019Z"
+}

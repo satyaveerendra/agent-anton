@@ -1,0 +1,22 @@
+{
+  "request_id": "20260828T220916Z-b2e673-i1",
+  "run_id": "20260828T220916Z-b2e673",
+  "kind": "APPROVAL",
+  "capability_id": "servicing.open_subaccount",
+  "goal": "Open a new savings sub-account with a $50 initial deposit for member 204817 and reach the confirmation screen",
+  "step_id": "turn8",
+  "reason": "RISKY action needs operator approval: RISKY (policy rule 1); no consent for this invocation",
+  "screenshot": "screenshots/shot-009.png",
+  "page_signature": "/member/204817/subaccount/review|Review new sub-account|c56a88d12e915b26",
+  "target_fingerprint": {
+    "role": "button",
+    "name_snippet": "Confirm and open account",
+    "control_type": "button",
+    "text_snippet": null
+  },
+  "target_rationale": "the model's chosen target for this turn",
+  "expected": null,
+  "console_url": "http://127.0.0.1:52303",
+  "requested_at": "2026-08-28T22:09:45.436331Z",
+  "lease_state": "PAUSED"
+}

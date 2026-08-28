@@ -104,7 +104,8 @@ def create_app(ctl: EscalationController) -> Flask:
             buttons = [("take", "Take control"), ("handback", "Hand back"), ("abort", "Abort")]
             if p["kind"] == "APPROVAL":
                 buttons = [("approve", "Approve once"), ("deny", "Deny")] + buttons
-            body.append("<p>" + " ".join(f"<button onclick=\"fetch('/api/{n}',{{method:'POST'}}).then(r=>r.json()).then(j=>{{document.getElementById('out').textContent=JSON.stringify(j)}}).then(()=>setTimeout(()=>location.reload(),800))\">{esc(label)}</button>" for n, label in buttons) + "</p><pre id='out'></pre>")
+            # The action row goes ABOVE the (tall) screenshot so it is never below the fold.
+            body.insert(1, "<p><b>actions:</b> " + " ".join(f"<button onclick=\"fetch('/api/{n}',{{method:'POST'}}).then(r=>r.json()).then(j=>{{document.getElementById('out').textContent=JSON.stringify(j)}}).then(()=>setTimeout(()=>location.reload(),800))\">{esc(label)}</button>" for n, label in buttons) + "</p><pre id='out'></pre>")
         body.append("<p><small>Drive the headed browser window the run owns; this page only changes the lease.</small></p>")
         return Response("<html><body style='font-family:sans-serif'>" + "".join(body) + "</body></html>", mimetype="text/html")
 

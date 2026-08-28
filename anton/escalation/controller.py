@@ -190,6 +190,9 @@ class EscalationController:
         self.record_human_action(dict(payload), frame_path)
 
     def record_human_action(self, payload: dict[str, Any], frame_path: list[str]) -> None:
+        url = str(payload.get("url") or "")
+        if url.startswith(self.console_url):
+            return  # the operator opened the console inside the run's browser: console clicks are not app actions
         value = payload.get("value")
         label = payload.get("label_context") or payload.get("name") or ""
         if value is not None and (payload.get("input_type") == "password" or self.redactor.is_field_label(label)):

@@ -1,0 +1,372 @@
+{
+ "path": "/member/204817/subaccount/review",
+ "url": "http://127.0.0.1:52298/member/204817/subaccount/review",
+ "title": "Review \u2014 Member Servicing Console",
+ "viewport": [
+  1280,
+  900
+ ],
+ "elements": [
+  {
+   "ref": "e3",
+   "role": "link",
+   "name": "Sign out",
+   "text": "Sign out"
+  },
+  {
+   "ref": "e14",
+   "role": "button",
+   "name": "Confirm and open account",
+   "text": "Confirm and open account"
+  },
+  {
+   "ref": "e15",
+   "role": "link",
+   "name": "Back",
+   "text": "Back"
+  },
+  {
+   "ref": "e1",
+   "role": "cell",
+   "name": "Member Servicing Console",
+   "text": "Member Servicing Console"
+  },
+  {
+   "ref": "e2",
+   "role": "text",
+   "name": "Signed in as ops_user",
+   "text": "Signed in as ops_user"
+  },
+  {
+   "ref": "e4",
+   "role": "text",
+   "name": "Review new sub-account",
+   "text": "Review new sub-account"
+  },
+  {
+   "ref": "e5",
+   "role": "cell",
+   "name": "Member",
+   "text": "Member"
+  },
+  {
+   "ref": "e6",
+   "role": "cell",
+   "name": "Alpha Sample (204817)",
+   "text": "Alpha Sample (204817)"
+  },
+  {
+   "ref": "e7",
+   "role": "cell",
+   "name": "Account type",
+   "text": "Account type"
+  },
+  {
+   "ref": "e8",
+   "role": "cell",
+   "name": "Savings",
+   "text": "Savings"
+  },
+  {
+   "ref": "e9",
+   "role": "cell",
+   "name": "Nickname",
+   "text": "Nickname"
+  },
+  {
+   "ref": "e10",
+   "role": "cell",
+   "name": "Holiday fund",
+   "text": "Holiday fund"
+  },
+  {
+   "ref": "e11",
+   "role": "cell",
+   "name": "Initial deposit",
+   "text": "Initial deposit"
+  },
+  {
+   "ref": "e12",
+   "role": "cell",
+   "name": "$50.00",
+   "text": "$50.00"
+  }
+ ],
+ "snapshot": {
+  "url": "http://127.0.0.1:52298/member/204817/subaccount/review",
+  "title": "Review \u2014 Member Servicing Console",
+  "frame_count": 1,
+  "elements": [
+   {
+    "ref": "e1",
+    "role": "cell",
+    "name": "Member Servicing Console",
+    "text": "Member Servicing Console",
+    "control_type": "td",
+    "frame_path": [],
+    "bbox": {
+     "x": 0.0,
+     "y": 0.0,
+     "w": 616.234375,
+     "h": 31.0
+    },
+    "enabled": true,
+    "visible": true,
+    "value": null,
+    "checked": null
+   },
+   {
+    "ref": "e2",
+    "role": "text",
+    "name": "Signed in as ops_user",
+    "text": "Signed in as ops_user",
+    "control_type": "span",
+    "frame_path": [],
+    "bbox": {
+     "x": 1017.546875,
+     "y": 6.0,
+     "w": 177.265625,
+     "h": 19.0
+    },
+    "enabled": true,
+    "visible": true,
+    "value": null,
+    "checked": null
+   },
+   {
+    "ref": "e3",
+    "role": "link",
+    "name": "Sign out",
+    "text": "Sign out",
+    "control_type": "a",
+    "frame_path": [],
+    "bbox": {
+     "x": 1206.8125,
+     "y": 6.0,
+     "w": 67.1875,
+     "h": 19.0
+    },
+    "enabled": true,
+    "visible": true,
+    "value": null,
+    "checked": null
+   },
+   {
+    "ref": "e4",
+    "role": "text",
+    "name": "Review new sub-account",
+    "text": "Review new sub-account",
+    "control_type": "span",
+    "frame_path": [],
+    "bbox": {
+     "x": 16.0,
+     "y": 47.0,
+     "w": 224.28125,
+     "h": 19.0
+    },
+    "enabled": true,
+    "visible": true,
+    "value": null,
+    "checked": null
+   },
+   {
+    "ref": "e5",
+    "role": "cell",
+    "name": "Member",
+    "text": "Member",
+    "control_type": "td",
+    "frame_path": [],
+    "bbox": {
+     "x": 10.5,
+     "y": 72.5,
+     "w": 118.78125,
+     "h": 28.0
+    },
+    "enabled": true,
+    "visible": true,
+    "value": null,
+    "checked": null
+   },
+   {
+    "ref": "e6",
+    "role": "cell",
+    "name": "Alpha Sample (204817)",
+    "text": "Alpha Sample (204817)",
+    "control_type": "td",
+    "frame_path": [],
+    "bbox": {
+     "x": 129.28125,
+     "y": 72.5,
+     "w": 200.84375,
+     "h": 28.0
+    },
+    "enabled": true,
+    "visible": true,
+    "value": null,
+    "checked": null
+   },
+   {
+    "ref": "e7",
+    "role": "cell",
+    "name": "Account type",
+    "text": "Account type",
+    "control_type": "td",
+    "frame_path": [],
+    "bbox": {
+     "x": 10.5,
+     "y": 100.5,
+     "w": 118.78125,
+     "h": 28.0
+    },
+    "enabled": true,
+    "visible": true,
+    "value": null,
+    "checked": null
+   },
+   {
+    "ref": "e8",
+    "role": "cell",
+    "name": "Savings",
+    "text": "Savings",
+    "control_type": "td",
+    "frame_path": [],
+    "bbox": {
+     "x": 129.28125,
+     "y": 100.5,
+     "w": 200.84375,
+     "h": 28.0
+    },
+    "enabled": true,
+    "visible": true,
+    "value": null,
+    "checked": null
+   },
+   {
+    "ref": "e9",
+    "role": "cell",
+    "name": "Nickname",
+    "text": "Nickname",
+    "control_type": "td",
+    "frame_path": [],
+    "bbox": {
+     "x": 10.5,
+     "y": 128.5,
+     "w": 118.78125,
+     "h": 28.0
+    },
+    "enabled": true,
+    "visible": true,
+    "value": null,
+    "checked": null
+   },
+   {
+    "ref": "e10",
+    "role": "cell",
+    "name": "Holiday fund",
+    "text": "Holiday fund",
+    "control_type": "td",
+    "frame_path": [],
+    "bbox": {
+     "x": 129.28125,
+     "y": 128.5,
+     "w": 200.84375,
+     "h": 28.0
+    },
+    "enabled": true,
+    "visible": true,
+    "value": null,
+    "checked": null
+   },
+   {
+    "ref": "e11",
+    "role": "cell",
+    "name": "Initial deposit",
+    "text": "Initial deposit",
+    "control_type": "td",
+    "frame_path": [],
+    "bbox": {
+     "x": 10.5,
+     "y": 156.5,
+     "w": 118.78125,
+     "h": 28.0
+    },
+    "enabled": true,
+    "visible": true,
+    "value": null,
+    "checked": null
+   },
+   {
+    "ref": "e12",
+    "role": "cell",
+    "name": "$50.00",
+    "text": "$50.00",
+    "control_type": "td",
+    "frame_path": [],
+    "bbox": {
+     "x": 129.28125,
+     "y": 156.5,
+     "w": 200.84375,
+     "h": 28.0
+    },
+    "enabled": true,
+    "visible": true,
+    "value": null,
+    "checked": null
+   },
+   {
+    "ref": "e13",
+    "role": "landmark",
+    "name": "",
+    "text": "",
+    "control_type": "form",
+    "frame_path": [],
+    "bbox": {
+     "x": 10.0,
+     "y": 185.0,
+     "w": 1260.0,
+     "h": 34.0
+    },
+    "enabled": true,
+    "visible": true,
+    "value": null,
+    "checked": null
+   },
+   {
+    "ref": "e14",
+    "role": "button",
+    "name": "Confirm and open account",
+    "text": "Confirm and open account",
+    "control_type": "button",
+    "frame_path": [],
+    "bbox": {
+     "x": 16.0,
+     "y": 192.0,
+     "w": 172.359375,
+     "h": 21.0
+    },
+    "enabled": true,
+    "visible": true,
+    "value": null,
+    "checked": null
+   },
+   {
+    "ref": "e15",
+    "role": "link",
+    "name": "Back",
+    "text": "Back",
+    "control_type": "a",
+    "frame_path": [],
+    "bbox": {
+     "x": 205.984375,
+     "y": 191.0,
+     "w": 38.390625,
+     "h": 19.0
+    },
+    "enabled": true,
+    "visible": true,
+    "value": null,
+    "checked": null
+   }
+  ]
+ }
+}
