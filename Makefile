@@ -4,7 +4,7 @@ UNIT = -m pytest -q -m "not integration and not acceptance"
 
 .PHONY: test verify-0 verify-surface verify-target target discover discover-subaccount replay replay-notfound \
         verify-1 verify-1b verify-2 verify-3 verify-4 verify-5a verify-5b verify-6 verify-7 \
-        verify-evidence verify-all approve demo-discovery-approval
+        verify-evidence verify-all approve demo-discovery-approval demo-discovery-approval-auto
 ACC = -m pytest -q -m acceptance tests/acceptance/test_aw_replay.py
 
 test:
@@ -67,6 +67,9 @@ verify-5b:           ## AW-5b HUMAN round-trip (definition of done): take contro
 
 demo-discovery-approval: ## phase-6 human demo: discover with --escalate, operator clicks Approve once
 	$(PY) tests/acceptance/demo_discovery_approval.py
+
+demo-discovery-approval-auto: ## the same path with a simulated operator (mechanics only; not the human gate)
+	$(PY) tests/acceptance/demo_discovery_approval.py --auto
 
 # --- available from later phases (SPEC §17); each fails loudly until its phase lands ---
 define not_yet
