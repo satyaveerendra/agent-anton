@@ -3,8 +3,9 @@
 ## Status
 - **Step 0 (housekeeping + independent review + spec revision + consistency pass): complete** — 2026-08-28.
 - **Phase 1 — Scaffold + schema: complete** — 2026-08-28. Gate `make verify-0` green.
-- **Phase 2 — Target app: complete** — 2026-08-28. Gate `make verify-target` green (output below); `verify-0` still green.
-- **Phase 3 — Surface + policy: not started.**
+- **Phase 2 — Target app: complete** — 2026-08-28. Gate `make verify-target` green.
+- **Phase 3 — Surface + policy: complete** — 2026-08-28 (1 of its 2-session budget). Gates `make verify-0` + `make verify-surface` green (output below); `verify-target` still green.
+- **Phase 4 — Replay first: not started.**
 
 ## What exists
 - `SPEC.md` (revised per the accepted Step-0 review; four author pins applied; `schema/loader.py`
@@ -24,6 +25,44 @@
 - `Makefile` (`verify-0`, `verify-surface`, `test`; later targets fail loudly), `pyproject.toml`
   (ruff + pytest markers), `.env.example`, `tests/` (conftest builders, 109 unit tests).
 - No application code beyond the schema layer; no `runs/` or `evidence/` content; no secrets.
+
+## What exists (phase 3)
+- `anton/surface/base.py`: `Surface` protocol (`observe/act/read/screenshot/resolve/url/path`), `ConcreteAction`
+  (+`value_kind` provenance), `ResolvedElement` (live role/name + snapshot text + handle), `ActError`.
+- `anton/surface/snapshot.py`: injected-JS enumeration per frame (roles from tag/type/ARIA; names from
+  aria-label / label / preceding cell; static text + cells + headings + landmarks; `label_context` for
+  controls AND static cells — first-row cells excepted), top-page boxes with frame offsets, `frame_path`
+  segments, per-element recursive iframe visibility (batched parent hit tests), empty snapshot on a pending
+  navigation, redaction applied at build.
+- `anton/surface/web.py`: `PlaywrightSurface` — resolve = geometry over the redacted snapshot → live handle;
+  `act` with the step budget (`no_wait_after`, `goto(commit)`, single-call SELECT) → `ActError`; live `read`;
+  dialog handler (log + dismiss); screenshots with per-frame injected mask overlays, fail-closed solid PNG.
+- `anton/replay/locate.py`: `$param:` expansion, tier-1/2/3 candidate resolution (row_cell survives column
+  shifts incl. a moved anchor column), per-tier fingerprints, `walk_ladder` (attempts reported),
+  `resolve_ladder_until` (tick polling to a deadline). `resume_point()` is owed to phase 4.
+- `anton/policy/gate.py`: `ActionGate.check` (lease → action type → origin/url glob → SECRET_LITERAL →
+  effective risk → DRAFT_RISKY → operator token → caller consent → NeedsApproval), `post_navigation_check`,
+  `draft_check`, relative NAVIGATE URLs joined, `route_prefix`-stripped risky rules, `LeaseState` +
+  the §11 edge table, `ApprovalToken`/`ApprovalStore`, `resolve_secret` (`ANTON_SECRET_<NAME>`), glob helpers.
+- `anton/policy/redact.py`: `Redactor` — known values, value patterns, rule (3) over snapshot elements with
+  the anchor and form-control exemptions (a mask region always wins over the anchor exemption).
+- Tests: `tests/unit/test_{gate,redact,locate}.py` (31 tests), `tests/integration/test_surface.py`
+  (16 Playwright tests against the real app; `make verify-surface`).
+- Phase-3 audit (3 agents): no blockers; every FIX applied (decisions P3-14..P3-20).
+
+## Verify results (phase 3, pasted from this session's terminal)
+```
+$ make verify-0
+.venv/bin/python -m ruff check .
+All checks passed!
+.venv/bin/python -m pytest -q -m "not integration and not acceptance"
+140 passed, 31 deselected in 2.31s
+$ make verify-surface
+.venv/bin/python -m pytest -q -m integration
+16 passed, 155 deselected in 23.26s
+$ make verify-target
+15 passed
+```
 
 ## What exists (phase 2)
 - `target_app/`: `app.py` (Flask factory `create_app(tenant, inject, slow_ms, debug_state)`; blueprint under the
@@ -69,29 +108,34 @@ every FIX item was applied (decisions P1-11..P1-15) and re-verified above.
 
 ## Owed to later phases (tracked here so nothing is silently claimed)
 - §16 "exit-30 pre-run case" (draft without `--allow-draft` / `DRAFT_RISKY` ⇒ FAILED POLICY_VIOLATION
-  result, run dir, no browser) lands with the replay engine start-up path in phase 4.
-- `inspect` shows a static lower bound of effective risk; the full act-time computation needs the
-  ActionGate (phase 3) — then wire `inspect` to it.
-- `ResolvedElement`, `ConcreteAction`, `ActError` land in `anton/surface/base.py` (phase 3).
+  result, run dir, no browser) lands with the replay engine start-up path in phase 4
+  (`ActionGate.draft_check` exists; the result/run-dir plumbing does not).
+- `inspect` shows a static lower bound of effective risk; wire it to `ActionGate.effective_risk` in phase 4.
+- Phase 4 must add: a predicate evaluator over snapshots (`UrlMatches`/`TitleMatches`/`TextVisible`/
+  `ElementVisible`/`FieldValue` (live read)/`Checked`/`AllOf`), `resume_point()`, the `observation` event
+  (P1-pin2: the pre-act observation is the snapshot the ladder resolved on), `ActError` ⇒ t=0 miss,
+  secret/sensitive-output registration into the Redactor, the run logger (`evidence/log.py`).
+- The gate's `route_prefix` must be passed by the engine (`GateContext.route_prefix`) — anchored risky rules
+  do not match on a prefixed tenant otherwise.
 
 ## Deferred to phase 8
 - Whether `SPEC.md` and `CLAUDE.md` remain in the public repo root or move under `docs/`
   (author decision at polish time; nothing before then depends on their location).
 
 ## Next actions
-1. Author reviews phase-2 output (`git show --stat HEAD`, `make verify-target`, `make target` + browse
-   http://127.0.0.1:8000/login with ops_user / demo-pass-1) and says "start phase 3".
-2. Phase 3 session (budget 2 sessions): re-read SPEC §17 phase 3 and every section it references from
-   the file — §7 (SemanticSnapshot builder: injected JS per frame, roles from tag/type/ARIA, name from
-   label/aria-label/nearest text, static text blocks + table cells, recursive iframe visibility, top-page
-   bboxes, `frame_path` format; ladder walk in `replay/locate.py` with per-tier fingerprints and
-   `Surface.resolve(candidate)` for ONE candidate; `read()`; action timeout = step budget; dialog handler;
-   masks via injected overlays, fail closed), §8 (ActionGate single choke point, Deny reasons incl.
-   `LEASE_NOT_HELD`/`DRAFT_RISKY`/`POST_NAV_OFFLIST`/`SECRET_LITERAL`, effective risk, `LeaseState` +
-   `ApprovalToken` in `policy/gate.py`, Redactor at every sink with anchor/form-control exemptions,
-   `SecretRef` → `ANTON_SECRET_<NAME>`), §16 (gate / redaction / ladder / surface-integration / lease
-   bullets), §19 gates (`verify-0` + `verify-surface`). Run `playwright install chromium` first.
-   Markup notes for the ladder walk (from the phase-2 audit): headings are bold `<span>`s inside `<td>`,
-   the accounts header row uses `<td>` (identify headers by first-row text), labels are sibling cells with
-   no `<label for>` — name derivation must prefer the preceding label cell; `/logout` is deliberately
-   outside the allowlist (P2-12). Gate: `make verify-0` + `make verify-surface`, paste output, commit.
+1. Author reviews phase-3 output (`git show --stat HEAD`, `make verify-surface`) and says "start phase 4".
+2. Phase 4 session (1 session): re-read SPEC §17 phase 4 and every section it references from the file —
+   §9 (start-up: param validation exit 2, loader, draft checks, launch at the effective entry URL,
+   `__preconditions__` pseudo-step with one-tick poll → flows → re-poll; per-step loop: pre-act global
+   RECOVERABLE detectors, ladder polled within the budget, gate, act, 250 ms tick evaluating postcondition →
+   step detectors → global detectors, RECOVERABLE → recovery + `resume_point()` with no re-entrancy,
+   BUSINESS → stop, HARD_FAILURE → evidence + FAILED, retry policy on EFFECTIVE risk, BLOCKED on
+   NeedsApproval, escalation mode off by default; `__success__` polled; `__outputs__` live read → normalize →
+   coerce; purity test), §4 (artifact/profile/overlay — hand-author `artifacts/read_savings_balance.json`
+   AND `artifacts/open_subaccount.json` per the §10.3 id rule, `specs/*.yaml` first), §5 (results,
+   exit codes, `--outputs-file`, redacted view), §6 (pinned labels/detector table), §8 (gate context incl.
+   `route_prefix`, secrets), §12 (`observation` event schema, run dir contents), §13 (`replay` flags),
+   §19 (AW-1, 1b, 2, 3a/b/c, 4, 7a–e assertions; the fixture's `Target.cli_env()` carries the exports).
+   Markup facts for the artifacts: decisions P3-19 (headings are `text`/`span`, header row is `cell`);
+   masks: SSN + Date of Birth cells in the pane, Account Number cell on the confirmation page.
+   Gate: `make verify-1 verify-1b verify-2 verify-3 verify-4 verify-7` green, paste output, commit.

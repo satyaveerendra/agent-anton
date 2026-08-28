@@ -18,7 +18,7 @@ from urllib.parse import urlsplit, urlunsplit
 import yaml
 from pydantic import ValidationError
 
-from anton.policy.gate import PolicyConfig, load_policy
+from anton.policy.gate import PolicyConfig, glob_covers, glob_match, load_policy
 from anton.schema.app_profile import AppProfile, TenantOverlay
 from anton.schema.artifact import (
     SCHEMA_VERSION,
@@ -246,37 +246,6 @@ def check_flows(artifact: CapabilityArtifact, profile: AppProfile) -> None:
             f"{artifact.capability_id}: flows {unknown} are referenced but not defined in "
             f"profile {profile.app_id!r} (defined: {sorted(profile.flows)})"
         )
-
-
-def _segments(pattern: str) -> list[str]:
-    return [s for s in pattern.split("/") if s != ""]
-
-
-def glob_match(pattern: str, path: str) -> bool:
-    """Segment glob: ``*`` = exactly one segment, ``**`` = any depth (including zero, so
-    ``/member/**`` covers ``/member``). Empty segments are dropped, so a trailing slash
-    never changes the answer. Query and fragment are ignored."""
-    return glob_covers(pattern, path.split("?", 1)[0].split("#", 1)[0])
-
-
-def glob_covers(policy_pattern: str, other: str) -> bool:
-    """True if ``policy_pattern`` covers ``other`` (a concrete path or a narrower pattern)."""
-
-    def rec(ps: list[str], fs: list[str]) -> bool:
-        if not ps:
-            return not fs
-        head = ps[0]
-        if head == "**":
-            return any(rec(ps[1:], fs[i:]) for i in range(len(fs) + 1))
-        if not fs:
-            return False
-        if fs[0] == "**":
-            return False
-        if head == "*":
-            return rec(ps[1:], fs[1:])
-        return head == fs[0] and rec(ps[1:], fs[1:])
-
-    return rec(_segments(policy_pattern), _segments(other))
 
 
 def check_profile_subset(effective_patterns: list[str], policy: PolicyConfig) -> None:
