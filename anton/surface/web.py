@@ -162,6 +162,19 @@ class PlaywrightSurface:
             role=live.role, name=live.name, handle=handle, text=el.text,
         )
 
+    def resolve_ref(self, ref: str) -> ResolvedElement | None:
+        """A turn-scoped ref from the LAST observed snapshot → live element (discovery tools)."""
+        snapshot, raw = self._ensure()
+        el = next((e for e in snapshot.elements if e.ref == ref), None)
+        live = next((r for r in raw.raw if r.ref == ref), None)
+        if el is None or live is None or ref not in raw.locator:
+            return None
+        try:
+            handle = self._handle_for(raw, ref)
+        except PlaywrightError:
+            return None
+        return ResolvedElement(ref=ref, frame_path=list(el.frame_path), bbox=el.bbox, control_type=el.control_type, role=live.role, name=live.name, handle=handle, text=el.text)
+
     def snapshot_text(self) -> dict[str, str]:
         """ref → redacted text of the last snapshot (for fingerprint text_snippet checks)."""
         return {e.ref: e.text for e in self._snapshot.elements} if self._snapshot else {}

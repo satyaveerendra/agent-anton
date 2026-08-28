@@ -87,6 +87,10 @@ class Surface(Protocol):
         """ONE candidate, against the last observed snapshot."""
         ...
 
+    def resolve_ref(self, ref: str) -> ResolvedElement | None:
+        """A turn-scoped ref (``e12``) from the last observed snapshot → live element (discovery)."""
+        ...
+
     def url(self) -> str:
         """The current top-frame URL (for the gate's post-navigation check)."""
         ...
