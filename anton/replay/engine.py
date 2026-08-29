@@ -527,7 +527,7 @@ class ReplayEngine:
         sig = f"{self.surface.path()}|{snap.title[:40]}|{hashlib.sha256(json.dumps([(e.ref, e.role, e.name) for e in snap.elements], default=str).encode()).hexdigest()[:16]}"
         target = step.target if step is not None else None
         return InterventionRequest(
-            request_id=self.escalation.next_request_id(), run_id=self.escalation.run_id, kind=kind, capability_id=self.artifact.capability_id, goal=None,  # type: ignore[arg-type]
+            request_id=self.escalation.next_request_id(), run_id=self.escalation.run_id, kind=kind, capability_id=self.artifact.capability_id, goal=self.artifact.description,  # type: ignore[arg-type]
             step_id=step_id, reason=self.redactor.scrub_text(reason)[:500], screenshot=shot, page_signature=sig,
             target_fingerprint=target.fingerprint if target is not None else None, target_rationale=target.candidates[0].rationale if target is not None else None,
             expected=expected, console_url=self.escalation.console_url, requested_at=datetime.now(UTC), lease_state=LeaseState.PAUSED.value,

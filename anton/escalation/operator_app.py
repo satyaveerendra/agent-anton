@@ -94,7 +94,9 @@ def create_app(ctl: EscalationController) -> Flask:
             fp = p.get("target_fingerprint") or {}
             body.append(
                 f"<h2>{esc(p['kind'])} at step <code>{esc(p['step_id'])}</code></h2>"
-                f"<p><b>capability:</b> {esc(str(p.get('capability_id') or ''))} &nbsp; <b>goal:</b> {esc(str(p.get('goal') or ''))}</p>"
+                f"<p><b>capability:</b> {esc(str(p.get('capability_id') or ''))}</p>"
+                + (f"<p><b>goal:</b> {esc(str(p['goal']))}</p>" if p.get('goal') else "")
+                +
                 f"<p><b>reason:</b> {esc(p['reason'])}</p>"
                 f"<p><b>target fingerprint:</b> <code>{esc(json.dumps(fp))}</code><br><b>rationale:</b> {esc(str(p.get('target_rationale') or ''))}</p>"
                 f"<p><b>expected signature:</b> <code>{esc(json.dumps(p.get('expected')))}</code></p>"
