@@ -124,10 +124,11 @@ additionally byte-scans the screenshots of a failing run.
 
 ## See it
 
-The human hand-off (AW-5b): the replay parks at the risky step, the operator takes control in the console,
-clicks "Confirm and open account" in the live Chromium window, hands back, and the run resumes to SUCCESS.
+The human hand-off (AW-5b), from the moment the replay is parked at the risky step: the operator takes
+control in the console, clicks "Confirm and open account" in the live Chromium window, hands back, and the
+run resumes to `AW-5b: PASS`.
 
-![AW-5b round-trip: park, take control, confirm in the live window, hand back, resume](evidence/escalation-demo/aw5b-roundtrip.gif)
+![AW-5b round-trip: parked at the risky step, take control, confirm in the live window, hand back, PASS](evidence/escalation-demo/aw5b-roundtrip.gif)
 
 Full-resolution clip: [`evidence/escalation-demo/aw5b-roundtrip.mp4`](evidence/escalation-demo/aw5b-roundtrip.mp4) (36 s, silent).
 

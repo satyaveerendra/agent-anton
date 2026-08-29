@@ -1,9 +1,9 @@
 {
-  "request_id": "20260828T220730Z-3c3b88-i1",
-  "run_id": "20260828T220730Z-3c3b88",
+  "request_id": "20260829T031020Z-210b50-i1",
+  "run_id": "20260829T031020Z-210b50",
   "kind": "APPROVAL",
   "capability_id": "servicing.open_subaccount",
-  "goal": null,
+  "goal": "Open a new Savings sub-account for a member with a nickname and an initial deposit.",
   "step_id": "click_confirm_and_open_account",
   "reason": "RISKY step needs operator approval: RISKY (policy rule 1); no consent for this invocation",
   "screenshot": "screenshots/shot-001.png",
@@ -27,7 +27,7 @@
       }
     ]
   },
-  "console_url": "http://127.0.0.1:52239",
-  "requested_at": "2026-08-28T22:07:39.932677Z",
+  "console_url": "http://127.0.0.1:56266",
+  "requested_at": "2026-08-29T03:10:25.954896Z",
   "lease_state": "PAUSED"
 }

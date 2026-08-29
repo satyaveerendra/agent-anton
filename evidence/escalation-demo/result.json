@@ -1,5 +1,5 @@
 {
-  "run_id": "20260828T220730Z-3c3b88",
+  "run_id": "20260829T031020Z-210b50",
   "capability_id": "servicing.open_subaccount",
   "version": "1.0.0",
   "tenant_id": "alpha",
@@ -20,7 +20,7 @@
       "step_id": "__preconditions__",
       "status": "PASSED",
       "attempts": 1,
-      "duration_ms": 922,
+      "duration_ms": 768,
       "resolution": null,
       "drift_flag": false,
       "recoveries": [],
@@ -31,7 +31,7 @@
       "step_id": "fill_member_id",
       "status": "PASSED",
       "attempts": 1,
-      "duration_ms": 43,
+      "duration_ms": 26,
       "resolution": {
         "tier": 1,
         "candidate_index": 0,
@@ -47,7 +47,7 @@
       "step_id": "click_search",
       "status": "PASSED",
       "attempts": 1,
-      "duration_ms": 382,
+      "duration_ms": 290,
       "resolution": {
         "tier": 1,
         "candidate_index": 0,
@@ -63,7 +63,7 @@
       "step_id": "click_open_sub_account",
       "status": "PASSED",
       "attempts": 1,
-      "duration_ms": 417,
+      "duration_ms": 410,
       "resolution": {
         "tier": 1,
         "candidate_index": 0,
@@ -79,7 +79,7 @@
       "step_id": "fill_nickname",
       "status": "PASSED",
       "attempts": 1,
-      "duration_ms": 51,
+      "duration_ms": 46,
       "resolution": {
         "tier": 1,
         "candidate_index": 0,
@@ -95,7 +95,7 @@
       "step_id": "fill_initial_deposit",
       "status": "PASSED",
       "attempts": 1,
-      "duration_ms": 25,
+      "duration_ms": 49,
       "resolution": {
         "tier": 1,
         "candidate_index": 0,
@@ -111,7 +111,7 @@
       "step_id": "click_terms",
       "status": "PASSED",
       "attempts": 1,
-      "duration_ms": 50,
+      "duration_ms": 62,
       "resolution": {
         "tier": 1,
         "candidate_index": 0,
@@ -127,7 +127,7 @@
       "step_id": "click_continue_to_review",
       "status": "PASSED",
       "attempts": 1,
-      "duration_ms": 285,
+      "duration_ms": 313,
       "resolution": {
         "tier": 1,
         "candidate_index": 0,
@@ -143,7 +143,7 @@
       "step_id": "click_confirm_and_open_account",
       "status": "HUMAN_COMPLETED",
       "attempts": 1,
-      "duration_ms": 71354,
+      "duration_ms": 26536,
       "resolution": {
         "tier": 1,
         "candidate_index": 0,
@@ -159,7 +159,7 @@
       "step_id": "__success__",
       "status": "PASSED",
       "attempts": 1,
-      "duration_ms": 19,
+      "duration_ms": 18,
       "resolution": null,
       "drift_flag": false,
       "recoveries": [],
@@ -170,7 +170,7 @@
       "step_id": "__outputs__",
       "status": "PASSED",
       "attempts": 1,
-      "duration_ms": 4,
+      "duration_ms": 5,
       "resolution": null,
       "drift_flag": false,
       "recoveries": [],
@@ -180,21 +180,21 @@
   ],
   "interventions": [
     {
-      "request_id": "20260828T220730Z-3c3b88-i1",
+      "request_id": "20260829T031020Z-210b50-i1",
       "kind": "APPROVAL",
       "at_step": "click_confirm_and_open_account",
       "reason": "RISKY step needs operator approval: RISKY (policy rule 1); no consent for this invocation",
-      "requested_at": "2026-08-28T22:07:39.932677Z",
-      "control_taken_at": "2026-08-28T22:08:28.048595Z",
-      "handed_back_at": "2026-08-28T22:08:50.984217Z",
-      "resolved_at": "2026-08-28T22:08:51.180053Z",
+      "requested_at": "2026-08-29T03:10:25.954896Z",
+      "control_taken_at": "2026-08-29T03:10:45.298406Z",
+      "handed_back_at": "2026-08-29T03:10:52.271822Z",
+      "resolved_at": "2026-08-29T03:10:52.375027Z",
       "resolution": "resumed",
-      "human_action_count": 3,
+      "human_action_count": 2,
       "human_actions_path": "human_actions.jsonl",
       "resumed_at_step": "__outputs__"
     }
   ],
-  "started_at": "2026-08-28T22:07:30.646485Z",
-  "finished_at": "2026-08-28T22:08:51.884762Z",
+  "started_at": "2026-08-29T03:10:20.082134Z",
+  "finished_at": "2026-08-29T03:10:52.890851Z",
   "redacted_view": true
 }
