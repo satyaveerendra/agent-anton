@@ -122,6 +122,15 @@ snapshot and transcript, and masked in every screenshot; `make verify-evidence` 
 file under `evidence/`, `artifacts/` and `runs/` (text files line by line, binaries by byte scan), and AW-4
 additionally byte-scans the screenshots of a failing run.
 
+## See it
+
+The human hand-off (AW-5b): the replay parks at the risky step, the operator takes control in the console,
+clicks "Confirm and open account" in the live Chromium window, hands back, and the run resumes to SUCCESS.
+
+![AW-5b round-trip: park, take control, confirm in the live window, hand back, resume](evidence/escalation-demo/aw5b-roundtrip.gif)
+
+Full-resolution clip: [`evidence/escalation-demo/aw5b-roundtrip.mp4`](evidence/escalation-demo/aw5b-roundtrip.mp4) (36 s, silent).
+
 ## Where to look
 
 - `evidence/INDEX.md` — every evidence folder mapped to the acceptance workflow or gate it demonstrates (discovery runs with transcripts, the escalation demos, one replay folder per AW).
